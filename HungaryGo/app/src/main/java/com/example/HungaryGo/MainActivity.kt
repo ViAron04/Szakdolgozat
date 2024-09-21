@@ -170,13 +170,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
 
         // milyen gyakran és minőségben érkezzenek helyadatok?
-        locationRequest = LocationRequest.create().apply {
-            interval = 1000 //régebbi, érdrmes lecserélni
-            fastestInterval = 1000
-            //priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-           // setSmallestDisplacement(1f) //csak akkor változik a pozíció, ha egy métert haladok
-
-        }
+        locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L)
+            .setMinUpdateIntervalMillis(1000L) // Set the minimum update interval in milliseconds
+            .setMaxUpdateDelayMillis(1000L)    // Optional: Set the maximum delay between updates
+            .setMinUpdateDistanceMeters(3f)    // Position updates only if user moves 1 meter
+            .build()
         Priority.PRIORITY_HIGH_ACCURACY
 
         // ellenőrzés
