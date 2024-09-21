@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "522161200670",
+    "project_id": "kotlin-gyak-firebase",
+    "storage_bucket": "kotlin-gyak-firebase.appspot.com",
+    "firebase_url": "https://kotlin-gyak-firebase-default-rtdb.europe-west1.firebasedatabase.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522161200670:android:98f31374e7f78956da980f",
+        "android_client_info": {
+          "package_name": "com.example.kotlin_gyakorlas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPuWJwquFs83tr9Ga8PD3Q3Fl_iVti2Nc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
