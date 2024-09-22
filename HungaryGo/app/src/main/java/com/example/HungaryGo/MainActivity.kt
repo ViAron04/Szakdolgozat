@@ -71,6 +71,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     currentMarker = mGoogleMap?.addMarker(MarkerOptions().position(latLng).title("Szerénységem").icon(icon))!!
 
+                    for((name,marker) in markerLocations){
+                        val distance = FloatArray(1)
+                        Location.distanceBetween(marker.position.latitude, marker.position.longitude, //megnézi, mekkora a táv a markerek és a játékos között
+                            latLng.latitude, latLng.longitude, distance)
+
+                        if(distance[0] < 20){
+                            Toast.makeText(applicationContext, "Közel vagy ${name}-hoz", Toast.LENGTH_LONG).show()
+                        }
+                    }
+
                     val newLatLng = LatLng(location.latitude, location.longitude)
                     mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLng(newLatLng)) //a kamera ezáltal követi a felhasználót
                 }
