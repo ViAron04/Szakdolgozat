@@ -3,7 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
-
+    <group
+        android:checkableBehavior="single">
     <item
         android:id="@+id/kalandKeres"
         android:title="Kalandok keresése"
@@ -12,18 +13,23 @@
         android:id="@+id/ujKaland"
         android:title="Új kaland létrehozása"
         />
-
+        <item
+            android:id="@+id/dicsFal"
+            android:title="Dicsőségfalam"
+            />
     <item
-        android:id="@+id/statisztikak"
+        android:id="@+id/stat"
         android:title="Statisztikáim"
+
         />
     <item
         android:id="@+id/terekep_kinezet"
-        android:title="Nézetváltás"
+        android:title="Műhold nézet"
+        app:actionLayout="@layout/switch_layout"
         />
     <item
         android:id="@+id/beallitasok"
         android:title="Beállítások"
         />
-
+    </group>
 </menu>

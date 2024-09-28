@@ -2,7 +2,7 @@ package com.example.HungaryGo
 
 import android.Manifest
 import android.animation.ValueAnimator
-import android.app.ActionBar
+
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -13,6 +13,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Toast
+import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
@@ -37,7 +38,9 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+
+
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener  {
 
     var mGoogleMap: GoogleMap? = null
 
@@ -52,34 +55,32 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     lateinit var toggle: ActionBarDrawerToggle
 
+    private lateinit var drawerLayout: DrawerLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         //sidemenu
-        // Find the DrawerLayout and NavigationView
-        val drawerLayout: DrawerLayout = findViewById(R.id.mapScreen)
+
+        drawerLayout = findViewById(R.id.mapScreen)
         val navView: NavigationView = findViewById(R.id.nav_view)
 
-        // Initialize the ActionBarDrawerToggle to handle the opening/closing of the side menu
-        toggle = ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close)
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
 
-        // Attach the DrawerListener to DrawerLayout
+        //toolbar felirata
+        supportActionBar?.title = "Üdv a HungaryGo-ban! :)"
+
+        val navigationView = findViewById<NavigationView>(R.id.nav_view)
+        navigationView.setNavigationItemSelectedListener(this)
+
+        val toggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open, R.string.close)
+
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        // Enable the toggle button (hamburger icon) in the action bar
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        // Set click listener for the NavigationView items
-        navView.setNavigationItemSelectedListener {
-            when (it.itemId) {
-                R.id.statisztikak -> startActivity(Intent(this@MainActivity, SignInScreen::class.java))
-            }
-            drawerLayout.closeDrawers() // Close the drawer after selection
-            true
-        }
         //sidemenu
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
@@ -220,9 +221,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // milyen gyakran és minőségben érkezzenek helyadatok?
         locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L)
-            .setMinUpdateIntervalMillis(1000L) // Set the minimum update interval in milliseconds
-            .setMaxUpdateDelayMillis(1000L)    // Optional: Set the maximum delay between updates
-            .setMinUpdateDistanceMeters(3f)    // Position updates only if user moves 1 meter
+            .setMinUpdateIntervalMillis(1000L) // minimális idő updatig
+            .setMaxUpdateDelayMillis(1000L)    // maximlis idő updatig
+            .setMinUpdateDistanceMeters(3f)    // csak akkor jelezzen, ha x méterrel többet mozog a karakter
             .build()
         Priority.PRIORITY_HIGH_ACCURACY
 
@@ -254,6 +255,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f))
     }
 
+
     //Jelenleg nincs használatba, haladás folyamatosabb megjelenítését segítené
     private fun animateMarkerToPosition(marker: Marker, finalPosition: LatLng) {
         val startPosition = marker.position
@@ -271,8 +273,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         valueAnimator.start()
     }
 
-    private fun menuButton(){
 
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.stat ->   Toast.makeText(this, "Közel vagy -hoz", Toast.LENGTH_LONG).show()
+        }
+        drawerLayout.closeDrawer(GravityCompat.START)
+        return true
     }
 
 
