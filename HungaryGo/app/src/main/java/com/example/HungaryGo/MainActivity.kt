@@ -2,15 +2,21 @@ package com.example.HungaryGo
 
 import android.Manifest
 import android.animation.ValueAnimator
+import android.app.ActionBar
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import com.google.android.gms.location.LocationRequest
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -24,6 +30,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.navigation.NavigationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -43,11 +50,37 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     val db = FirebaseDatabase.getInstance()
     val markerLocations: MutableMap<String? ,MarkerOptions> = mutableMapOf()
 
+    lateinit var toggle: ActionBarDrawerToggle
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        //sidemenu
+        // Find the DrawerLayout and NavigationView
+        val drawerLayout: DrawerLayout = findViewById(R.id.mapScreen)
+        val navView: NavigationView = findViewById(R.id.nav_view)
+
+        // Initialize the ActionBarDrawerToggle to handle the opening/closing of the side menu
+        toggle = ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close)
+
+        // Attach the DrawerListener to DrawerLayout
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        // Enable the toggle button (hamburger icon) in the action bar
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        // Set click listener for the NavigationView items
+        navView.setNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.statisztikak -> startActivity(Intent(this@MainActivity, SignInScreen::class.java))
+            }
+            drawerLayout.closeDrawers() // Close the drawer after selection
+            true
+        }
+        //sidemenu
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
         getCurrentLocationUser()
@@ -88,6 +121,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (toggle.onOptionsItemSelected(item)) {
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
 
     private fun getLocationPacks()
     {
@@ -231,5 +270,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         valueAnimator.start()
     }
+
+    private fun menuButton(){
+
+    }
+
+
 
 }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <item
+        android:id="@+id/kalandKeres"
+        android:title="Kalandok keresése"
+        />
+    <item
+        android:id="@+id/ujKaland"
+        android:title="Új kaland létrehozása"
+        />
+
+    <item
+        android:id="@+id/statisztikak"
+        android:title="Statisztikáim"
+        />
+    <item
+        android:id="@+id/terekep_kinezet"
+        android:title="Nézetváltás"
+        />
+    <item
+        android:id="@+id/beallitasok"
+        android:title="Beállítások"
+        />
+
+</menu>
