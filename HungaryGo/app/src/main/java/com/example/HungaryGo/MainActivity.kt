@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
     private lateinit var locationCallback1: LocationCallback
 
     val db = FirebaseDatabase.getInstance()
-    val markerLocations: MutableMap<String? ,MarkerOptions> = mutableMapOf()
+    public val markerLocations: MutableMap<String? ,MarkerOptions> = mutableMapOf()
 
     lateinit var toggle: ActionBarDrawerToggle
 
@@ -276,11 +276,33 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
-            R.id.stat ->   Toast.makeText(this, "Közel vagy -hoz", Toast.LENGTH_LONG).show()
+            R.id.kalandKeres -> {
+                startActivity(Intent(this@MainActivity, AdventureList::class.java))
+            }
+
+            R.id.ujKaland -> {
+                startActivity(Intent(this@MainActivity, Maker::class.java))
+            }
+            R.id.dicsFal -> {
+                startActivity(Intent(this@MainActivity, gloryWall::class.java))
+            }
+            R.id.stat ->   Toast.makeText(this, "statisztika", Toast.LENGTH_LONG).show()
+            R.id.beallitasok -> Toast.makeText(this, "beallitasok", Toast.LENGTH_LONG).show()
+
+            R.id.kijelentkezes -> {
+                startActivity(Intent(this@MainActivity, SignInScreen::class.java))
+            }
+
+
+
+
+
+
         }
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
+
 
 
 

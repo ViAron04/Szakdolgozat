@@ -31,5 +31,9 @@
         android:id="@+id/beallitasok"
         android:title="Beállítások"
         />
+    <item
+        android:id="@+id/kijelentkezes"
+        android:title="Kijelentkezés"
+        />
     </group>
 </menu>
