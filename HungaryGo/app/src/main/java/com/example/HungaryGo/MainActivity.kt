@@ -302,8 +302,4 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
-
-
-
-
 }
