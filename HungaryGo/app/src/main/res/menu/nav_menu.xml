@@ -23,9 +23,8 @@
 
         />
     <item
-        android:id="@+id/terekep_kinezet"
+        android:id="@+id/terkep_kinezet"
         android:title="Műhold nézet"
-        app:actionLayout="@layout/switch_layout"
         />
     <item
         android:id="@+id/beallitasok"

@@ -55,6 +55,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
     lateinit var toggle: ActionBarDrawerToggle
 
+    private var satelliteOn : Boolean = false
+
     private lateinit var drawerLayout: DrawerLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -214,9 +216,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
     override fun onMapReady(googleMap: GoogleMap) {
         mGoogleMap = googleMap
 
-        //Tedd választhatóvá!!
-        //mGoogleMap?.mapType = GoogleMap.MAP_TYPE_SATELLITE
-
         val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
 
         // milyen gyakran és minőségben érkezzenek helyadatok?
@@ -274,30 +273,39 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
     }
 
 
+
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
             R.id.kalandKeres -> {
                 startActivity(Intent(this@MainActivity, AdventureList::class.java))
             }
-
             R.id.ujKaland -> {
                 startActivity(Intent(this@MainActivity, Maker::class.java))
             }
             R.id.dicsFal -> {
                 startActivity(Intent(this@MainActivity, gloryWall::class.java))
             }
-            R.id.stat ->   Toast.makeText(this, "statisztika", Toast.LENGTH_LONG).show()
+            R.id.stat ->   {
+                Toast.makeText(this, "statisztika", Toast.LENGTH_LONG).show()
+            }
+            R.id.terkep_kinezet -> {
+                val terkepKinezetTitle = item
+                if(satelliteOn == false){
+                    mGoogleMap?.mapType = GoogleMap.MAP_TYPE_SATELLITE
+                    terkepKinezetTitle.setTitle("Alap nézet")
+                    satelliteOn = true
+                }
+                else{
+                    mGoogleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
+                    terkepKinezetTitle.setTitle("Műhold nézet")
+                    satelliteOn = false
+                }
+            }
             R.id.beallitasok -> Toast.makeText(this, "beallitasok", Toast.LENGTH_LONG).show()
 
             R.id.kijelentkezes -> {
                 startActivity(Intent(this@MainActivity, SignInScreen::class.java))
             }
-
-
-
-
-
-
         }
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
