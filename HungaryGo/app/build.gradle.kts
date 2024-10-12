@@ -34,6 +34,9 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -49,6 +52,10 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:19.0.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.firebase:firebase-database:21.0.0")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("androidx.annotation:annotation:1.6.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

@@ -1,20 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".SignInScreen"
-    android:background="@drawable/signinhatter_demo">
+    android:background="@drawable/signinhatter_demo"
+    android:orientation="vertical"
+    android:gravity="bottom|center_horizontal"
+    android:paddingBottom="10dp">
+
+    <EditText
+        android:id="@+id/usernameText"
+        android:layout_width="328dp"
+        android:layout_height="58dp"
+        android:layout_marginBottom="20dp"
+        android:ems="10"
+        android:inputType="text"
+        android:hint="Felhasználóneved" />
+
+    <EditText
+        android:id="@+id/passwordText"
+        android:layout_width="328dp"
+        android:layout_height="58dp"
+        android:layout_marginBottom="10dp"
+        android:ems="10"
+        android:inputType="textPassword"
+        android:hint="Jelszavad" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="200dp"
+            android:layout_height="67dp"
+            android:layout_weight="1"
+            android:layout_margin="15dp"
+            android:onClick="googleSignInClick"
+            android:text="Bejelentkezés" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="200dp"
+            android:layout_height="67dp"
+            android:layout_weight="1"
+            android:layout_margin="15dp"
+            android:onClick="registrationClick"
+            android:text="Regisztráció" />
+    </LinearLayout>
 
     <Button
-        android:id="@+id/button"
-        android:layout_width="232dp"
-        android:layout_height="53dp"
-        android:layout_marginEnd="88dp"
-        android:layout_marginBottom="192dp"
-        android:text="Bejelentkezés Google fiókkal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:onClick="googleSignIn"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:id="@+id/button3"
+        android:layout_width="300dp"
+        android:layout_height="50dp"
+        android:onClick="googleSignIn"
+        android:text="Google bejelentkezés"/>
+
+
+</LinearLayout>
