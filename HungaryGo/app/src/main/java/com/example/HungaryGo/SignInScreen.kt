@@ -17,7 +17,7 @@ import com.google.firebase.ktx.Firebase
 
 class SignInScreen : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
-    private lateinit var username: EditText
+    private lateinit var emailAddr: EditText
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in_screen)
@@ -37,10 +37,10 @@ class SignInScreen : AppCompatActivity() {
     }
 
     fun registrationClick(view: View) {
-        username = findViewById(R.id.usernameText)
-        val usernameString = username.text.toString()
+        emailAddr = findViewById(R.id.emailText)
+        val emailString = emailAddr.text.toString()
         val intent = Intent(this@SignInScreen, RegistrationScreen::class.java)
-        intent.putExtra("prevUsername", usernameString)
+        intent.putExtra("prevEmail", emailString)
         startActivity(intent)
     }
 

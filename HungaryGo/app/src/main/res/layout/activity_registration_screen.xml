@@ -44,7 +44,7 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <EditText
-        android:id="@+id/password2"
+        android:id="@+id/passwordRegister2"
         android:layout_width="321dp"
         android:layout_height="63dp"
         android:layout_marginEnd="44dp"
@@ -68,7 +68,7 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <EditText
-        android:id="@+id/password"
+        android:id="@+id/passwordRegister"
         android:layout_width="321dp"
         android:layout_height="63dp"
         android:layout_marginEnd="44dp"
@@ -110,6 +110,7 @@
         android:layout_marginBottom="44dp"
         android:text="Regisztrálok"
         android:textSize="25sp"
+        android:onClick="registerClick"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

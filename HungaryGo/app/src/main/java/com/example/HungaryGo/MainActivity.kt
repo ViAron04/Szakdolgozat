@@ -32,12 +32,12 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-
-
+import com.google.firebase.ktx.Firebase
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener  {
@@ -304,6 +304,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
             R.id.beallitasok -> Toast.makeText(this, "beallitasok", Toast.LENGTH_LONG).show()
 
             R.id.kijelentkezes -> {
+                Firebase.auth.signOut()
                 startActivity(Intent(this@MainActivity, SignInScreen::class.java))
             }
         }
