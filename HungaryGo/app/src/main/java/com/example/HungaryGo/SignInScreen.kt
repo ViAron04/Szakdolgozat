@@ -33,7 +33,35 @@ class SignInScreen : AppCompatActivity() {
     }
 
     fun googleSignInClick(view: View) {
-        startActivity(Intent(this@SignInScreen, MainActivity::class.java))
+        val email = findViewById<EditText>(R.id.emailText)
+        val emailSignIn = email.text.toString();
+
+        val passwd = findViewById<EditText>(R.id.passwordText)
+        val passwordSignIn = passwd.text.toString();
+
+        if(emailSignIn == "")
+        {
+            Toast.makeText(this, "Nem adtál meg email címet", Toast.LENGTH_LONG).show()
+        }
+        else if(passwordSignIn == "")
+        {
+            Toast.makeText(this, "Nem adtál meg jelszót", Toast.LENGTH_LONG).show()
+        }
+        else
+        {
+            auth.signInWithEmailAndPassword(emailSignIn, passwordSignIn)
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        Log.d(TAG, "signInWithEmail:success")
+                        val user = auth.currentUser
+                        Toast.makeText(this, "Bejelentkezés sikeres :)", Toast.LENGTH_LONG).show()
+                        startActivity(Intent(this@SignInScreen, MainActivity::class.java))
+                    } else {
+                        Log.w(TAG, "signInWithEmail:failure", task.exception)
+                        Toast.makeText(this, "Nem sikerült a bejelentkezés :(", Toast.LENGTH_LONG).show()
+                    }
+                }
+        }
     }
 
     fun registrationClick(view: View) {

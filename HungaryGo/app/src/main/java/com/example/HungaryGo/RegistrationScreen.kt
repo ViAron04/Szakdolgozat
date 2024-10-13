@@ -68,13 +68,13 @@ class RegistrationScreen : AppCompatActivity() {
                     if (task.isSuccessful) {
                         Log.d(TAG, "createUserWithEmail:success")
                         val user = auth.currentUser
-                        Toast.makeText(this, "Sikeres regisztráció! :)", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Sikeres regisztráció :)", Toast.LENGTH_LONG).show()
                         val intent = Intent(this@RegistrationScreen, SignInScreen::class.java)
                         startActivity(intent)
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "createUserWithEmail:failure", task.exception)
-                        Toast.makeText(this, "Nem sikerült a regisztráció! :(", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Nem sikerült a regisztráció :(", Toast.LENGTH_LONG).show()
                     }
                 }
         }
