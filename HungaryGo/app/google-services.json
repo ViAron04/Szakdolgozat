@@ -1,19 +1,32 @@
 {
   "project_info": {
     "project_number": "522161200670",
+    "firebase_url": "https://kotlin-gyak-firebase-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "kotlin-gyak-firebase",
-    "storage_bucket": "kotlin-gyak-firebase.appspot.com",
-    "firebase_url": "https://kotlin-gyak-firebase-default-rtdb.europe-west1.firebasedatabase.app"
+    "storage_bucket": "kotlin-gyak-firebase.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:522161200670:android:98f31374e7f78956da980f",
+        "mobilesdk_app_id": "1:522161200670:android:a63f9f8b82d7c825da980f",
         "android_client_info": {
-          "package_name": "com.example.kotlin_gyakorlas"
+          "package_name": "com.example.HungaryGo"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "522161200670-g476lfa6e85jejba2ni2c4am34orflbm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.HungaryGo",
+            "certificate_hash": "6c5c7338e808296fa0bd093e7e2b9f9b58f557c8"
+          }
+        },
+        {
+          "client_id": "522161200670-qsqphffs5hdlgj14eu862f4smd3jji54.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBPuWJwquFs83tr9Ga8PD3Q3Fl_iVti2Nc"
@@ -21,7 +34,49 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "522161200670-qsqphffs5hdlgj14eu862f4smd3jji54.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522161200670:android:98f31374e7f78956da980f",
+        "android_client_info": {
+          "package_name": "com.example.kotlin_gyakorlas"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "522161200670-5hsm8plogukfo1rtkav7ub986qfu429n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kotlin_gyakorlas",
+            "certificate_hash": "6c5c7338e808296fa0bd093e7e2b9f9b58f557c8"
+          }
+        },
+        {
+          "client_id": "522161200670-qsqphffs5hdlgj14eu862f4smd3jji54.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPuWJwquFs83tr9Ga8PD3Q3Fl_iVti2Nc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "522161200670-qsqphffs5hdlgj14eu862f4smd3jji54.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
