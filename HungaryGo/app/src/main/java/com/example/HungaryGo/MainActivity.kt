@@ -12,6 +12,8 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.LinearInterpolator
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -85,7 +87,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        //sidemenu
+        //sidemenu vége
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
         getCurrentLocationUser()
@@ -173,8 +175,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
                     mGoogleMap?.setOnMarkerClickListener {marker ->
                         val markerTest=marker.title
-                        Toast.makeText(applicationContext, "Szia, én ${marker.title}",
+                        Toast.makeText(applicationContext, "Szia, én ${marker.title} vagyok!",
                             Toast.LENGTH_LONG).show()
+                        var levelDisplay: TextView? = findViewById(R.id.levelDisplay)
+
+                        levelDisplay?.setText(marker.title)
+
                         false
                     }
 
@@ -265,14 +271,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
     //ráközelít a helyzetemre
 
     fun goToMe(view: View) {
-
+        val goToMeButtonButton: Button = findViewById(R.id.goToMe)
         if(follows){
             follows = false;
+            goToMeButtonButton.setText("Követés bekapcsolása")
         }
         else{
             val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
             mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f))
             follows = true;
+            goToMeButtonButton.setText("Követés kikapcsolása")
         }
     }
 
