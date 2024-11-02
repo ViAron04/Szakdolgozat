@@ -57,6 +57,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
     private var satelliteOn : Boolean = false
 
+    var follows : Boolean = false
+
     private lateinit var drawerLayout: DrawerLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,7 +120,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                     }
 
                     val newLatLng = LatLng(location.latitude, location.longitude)
-                    mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLng(newLatLng)) //a kamera ezáltal követi a felhasználót
+
+                    if(follows) { //a goToMe funkcióban állítható
+                        mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLng(newLatLng)) //a kamera ezáltal követi a felhasználót
+                    }
                 }
             }
         }
@@ -158,12 +163,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                                         .title(buildingName)
                                         .draggable(false)
 
+
                                     markerLocations[buildingName] = actualMarker
 
                                     mGoogleMap?.addMarker(actualMarker)
                                 }
                             }
                     }
+
+                    mGoogleMap?.setOnMarkerClickListener {marker ->
+                        val markerTest=marker.title
+                        Toast.makeText(applicationContext, "Szia, én ${marker.title}",
+                            Toast.LENGTH_LONG).show()
+                        false
+                    }
+
+
                 } else {
                     println("Nem találtam helyszíneket az adatbázisban")
                 }
@@ -172,7 +187,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                 println("Error getting data: ${error.message}")
             }
         })
-
     }
 
     //meghatározza  a jelenlegi pozíciót
@@ -249,9 +263,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
     }*/
 
     //ráközelít a helyzetemre
+
     fun goToMe(view: View) {
-        val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
-        mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f))
+
+        if(follows){
+            follows = false;
+        }
+        else{
+            val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
+            mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f))
+            follows = true;
+        }
     }
 
 

@@ -87,6 +87,7 @@ class SignInScreen : AppCompatActivity() {
         startActivity(intent)
     }
 
+    //Google bejelentkezés:
     fun googleSignIn(view: View)
     {
         val signInIntent = googleSignInClient.signInIntent
@@ -95,12 +96,10 @@ class SignInScreen : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...)
         if (requestCode == RC_SIGN_IN) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
-                // Google Sign-In was successful, authenticate with Firebase
+                // Gbejelentkezés sikeres volt, jön a firebase autentikáció
                 val account = task.getResult(ApiException::class.java)
                 firebaseAuthWithGoogle(account)
             } catch (e: ApiException) {
@@ -117,13 +116,11 @@ class SignInScreen : AppCompatActivity() {
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
                     val user = auth.currentUser
                     Toast.makeText(this, "Bejelentkezés sikeres :)", Toast.LENGTH_LONG).show()
                     startActivity(Intent(this@SignInScreen, MainActivity::class.java))
                 } else {
-                    // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
                     Toast.makeText(this, "Nem sikerült a bejelentkezés :(", Toast.LENGTH_LONG).show()
                 }

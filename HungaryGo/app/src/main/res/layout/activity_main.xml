@@ -34,6 +34,9 @@
                     class="com.google.android.gms.maps.SupportMapFragment"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
+
+
+
             </FrameLayout>
             <Button
                 android:id="@+id/goToMe"
@@ -43,6 +46,7 @@
                 android:layout_gravity="bottom|end"
                 android:onClick="goToMe"
                 android:text="Ugorj a helyzetemre!" />
+
         </FrameLayout>
     </LinearLayout>
 
