@@ -10,6 +10,7 @@ import android.widget.EditText
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 
 class RegistrationScreen : AppCompatActivity() {
@@ -69,6 +70,20 @@ class RegistrationScreen : AppCompatActivity() {
                         Log.d(TAG, "createUserWithEmail:success")
                         val user = auth.currentUser
                         Toast.makeText(this, "Sikeres regisztráció :)", Toast.LENGTH_LONG).show()
+
+                        val db = FirebaseFirestore.getInstance()
+
+                        val emailNonNullable: String = user?.email!!
+                        // A felhasználó email címének hozzáadása a userpoints gyűjteményhez
+                        val userPoints = hashMapOf(
+                            "email" to user?.email
+                        )
+
+                        db.collection("userpoints")
+                            .document(emailNonNullable) //a felhasználó email címe mint az uj document neve
+
+
+
                         val intent = Intent(this@RegistrationScreen, SignInScreen::class.java)
                         startActivity(intent)
                     } else {

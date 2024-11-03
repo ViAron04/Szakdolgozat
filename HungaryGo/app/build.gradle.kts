@@ -47,6 +47,7 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-firestore")
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
     implementation("com.google.android.gms:play-services-maps:19.0.0")

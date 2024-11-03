@@ -3,6 +3,7 @@ package com.example.HungaryGo
 import CustomInfoWindowForGoogleMap
 import android.Manifest
 import android.animation.ValueAnimator
+import android.app.AlertDialog
 
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -107,6 +108,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
         var currentMarker: Marker? = null
 
+        var currentNearbyLocation: String? = null
+
         locationCallback1 = object : LocationCallback() {
 
             override fun onLocationResult(locationResult: LocationResult) { //akkor hívódik meg, ha új helymeghatározási eredmények érkeznek
@@ -124,13 +127,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
                     currentMarker = mGoogleMap?.addMarker(MarkerOptions().position(latLng).title("Szerénységem").icon(icon))!!
 
+
                     for((locationName,marker) in currentLocationPackList){
                         val distance = FloatArray(1)
                         Location.distanceBetween(marker.position.latitude, marker.position.longitude, //megnézi, mekkora a táv a markerek és a játékos között
                             latLng.latitude, latLng.longitude, distance)
 
-                        if(distance[0] < 20){
-                            Toast.makeText(applicationContext, "Közel vagy ${locationName}-hoz", Toast.LENGTH_LONG).show()
+                        if(distance[0] < 20 && locationName != currentNearbyLocation){
+
+                            showNearInfoWindow(locationName)
+                            //Toast.makeText(applicationContext, "Közel vagy ${locationName}-hoz", Toast.LENGTH_LONG).show()
+                            currentNearbyLocation = locationName
+
                         }
                     }
 
@@ -140,6 +148,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                         mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLng(newLatLng)) //a kamera ezáltal követi a felhasználót
                     }
                 }
+            }
+
+            private fun showNearInfoWindow(locationName: String?) {
+                val dialogBuilder = AlertDialog.Builder(this@MainActivity) // `this` should be your Activity context
+
+                dialogBuilder.setTitle("Közel vagy!")
+                    .setMessage("A(z) $locationName-hez értél!")
+                    .setCancelable(true)
+                    .setPositiveButton("OK") { dialog, _ ->
+                        Toast.makeText(applicationContext, "cock", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }
+
+                val alertDialog = dialogBuilder.create()
+                alertDialog.show() // Show the dialog
+
             }
         }
     }
@@ -195,10 +219,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                                         Toast.makeText(this@MainActivity, "Ennél a markernél történt kattintás: ${marker.title}", Toast.LENGTH_SHORT).show()
                                         var locationPackDisplay: TextView? = findViewById(R.id.levelDisplay)
 
+                                        var newLocationPack: String? = null
+
                                         for ((locationPack, location) in locationPackList) {
                                             if(location.contains(marker.title)){
                                                 locationPackDisplay?.setText(locationPack)
                                                 currentLocationPack=locationPack
+                                                break
                                             }
                                         }
                                         currentLocationPackList.clear()
