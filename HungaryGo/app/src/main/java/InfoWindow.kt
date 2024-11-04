@@ -20,7 +20,7 @@ class CustomInfoWindowForGoogleMap(context: Context) : GoogleMap.InfoWindowAdapt
         val startButton = view.findViewById<Button>(R.id.startButton)
 
 
-        val location_packName =  "lol"
+        val location_packName =  "Pálya neve"
 
         location_pack.text = location_packName
         location.text = marker.title

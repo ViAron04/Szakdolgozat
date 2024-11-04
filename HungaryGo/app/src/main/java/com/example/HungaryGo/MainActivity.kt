@@ -64,10 +64,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
     private var satelliteOn : Boolean = false
 
-    //loacation packek és a bennük található helyek listája (currentLocationPack megtalálásához)
+    //pályák és a bennük található helyek listája (currentLocationPack megtalálásához)
     val locationPackList: MutableMap<String?, MutableList<String?>> = mutableMapOf()
 
-    //a jelenlegi Location Pack helyszínei
+    //a jelenleg kiválasztott pálya helyszínei
     val currentLocationPackList: MutableMap<String? ,MarkerOptions> = mutableMapOf()
 
     var follows : Boolean = false
@@ -150,6 +150,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                 }
             }
 
+            //szövegablak ha közel érek
             private fun showNearInfoWindow(locationName: String?) {
                 val dialogBuilder = AlertDialog.Builder(this@MainActivity) // `this` should be your Activity context
 
@@ -157,7 +158,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                     .setMessage("A(z) $locationName-hez értél!")
                     .setCancelable(true)
                     .setPositiveButton("OK") { dialog, _ ->
-                        Toast.makeText(applicationContext, "cock", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(applicationContext, "Ilyenkor menne az adat a firestoreba", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
                     }
 
@@ -175,6 +176,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
         return super.onOptionsItemSelected(item)
     }
 
+    //markerek lehelyezése, az infowindowra történő kattintás kezelése
     private fun getLocationPacks()
     {
         //belép a location packsba
@@ -188,11 +190,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                     for (buildingSnapshot1 in snapshot.children) { //Pl. Pannon Egyetem, Vasszécseny kör
                         val locationPack = buildingSnapshot1
 
-                            val currentList: MutableList<String?> = mutableListOf()
+                            var currentList: MutableList<String?> = mutableListOf()
 
                             for (buildingSnapshot in locationPack.children) {
                                 val buildingName =
                                     buildingSnapshot.key  //Pl. "A épület", "I épület"
+
+
                                 if (!markerLocations.containsKey(buildingName)) {
 
                                     currentList.add(buildingName)
@@ -208,41 +212,49 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                                         .title(buildingName)
                                         .draggable(false)
 
-
                                     markerLocations[buildingName] = actualMarker
 
                                     mGoogleMap?.addMarker(actualMarker)
 
                                     mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainActivity))
-
-                                    mGoogleMap?.setOnInfoWindowClickListener { marker ->
-                                        Toast.makeText(this@MainActivity, "Ennél a markernél történt kattintás: ${marker.title}", Toast.LENGTH_SHORT).show()
-                                        var locationPackDisplay: TextView? = findViewById(R.id.levelDisplay)
-
-                                        var newLocationPack: String? = null
-
-                                        for ((locationPack, location) in locationPackList) {
-                                            if(location.contains(marker.title)){
-                                                locationPackDisplay?.setText(locationPack)
-                                                currentLocationPack=locationPack
-                                                break
-                                            }
-                                        }
-                                        currentLocationPackList.clear()
-
-                                        val nonNullableCurrentLocationPack: String = currentLocationPack!!
-                                        getLocationData(nonNullableCurrentLocationPack)
-
-                                    }
                                 }
                             }
 
                             locationPackList[locationPack.key]=currentList;
                     }
 
+
                 } else {
                     println("Nem találtam helyszíneket az adatbázisban")
                 }
+
+                //infowindowra kattintás
+                mGoogleMap?.setOnInfoWindowClickListener { marker ->
+                    if (locationPackList.isEmpty()) {
+                        Toast.makeText(this@MainActivity, "Még töltök, kérlek várj...", Toast.LENGTH_SHORT).show()
+                        return@setOnInfoWindowClickListener
+                    }
+                    else{
+                        Toast.makeText(this@MainActivity, "Ennél a markernél történt kattintás: ${marker.title}", Toast.LENGTH_SHORT).show()
+                        var locationPackDisplay: TextView? = findViewById(R.id.levelDisplay)
+
+                        //megkeresi a location_packet
+                        for ((locationPack1, location) in locationPackList) {
+                            if(location.contains(marker.title)){
+                                locationPackDisplay?.setText(locationPack1)
+                                currentLocationPack=locationPack1
+                                break
+                            }
+                        }
+                        currentLocationPackList.clear()
+
+                        val nonNullableCurrentLocationPack: String = currentLocationPack!!
+                        getLocationData(nonNullableCurrentLocationPack)
+                    }
+
+
+                }
+
             }
             override fun onCancelled(error: DatabaseError) { //hibakezelés
                 println("Error getting data: ${error.message}")

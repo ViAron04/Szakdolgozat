@@ -76,12 +76,19 @@ class RegistrationScreen : AppCompatActivity() {
                         val emailNonNullable: String = user?.email!!
                         // A felhasználó email címének hozzáadása a userpoints gyűjteményhez
                         val userPoints = hashMapOf(
-                            "email" to user?.email
+                            "email" to emailNonNullable
                         )
 
+                        // Save the new user data to Firestore
                         db.collection("userpoints")
-                            .document(emailNonNullable) //a felhasználó email címe mint az uj document neve
-
+                            .document(emailNonNullable)
+                            .set(userPoints) // <-- This line actually writes the data to Firestore
+                            .addOnSuccessListener {
+                                Log.d(TAG, "User added to Firestore with email: $emailNonNullable")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w(TAG, "Error adding user to Firestore", e)
+                            }
 
 
                         val intent = Intent(this@RegistrationScreen, SignInScreen::class.java)
