@@ -26,6 +26,7 @@ class SignInScreen : AppCompatActivity() {
     private lateinit var emailAddr: EditText
     private lateinit var googleSignInClient: GoogleSignInClient
     private val RC_SIGN_IN = 9001
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in_screen)
@@ -34,13 +35,16 @@ class SignInScreen : AppCompatActivity() {
 
         //google bejelentkezes
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id)) // Your Web Client ID
+            .requestIdToken(getString(R.string.default_web_client_id)) // Web Client ID
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         val currentUser = auth.currentUser
         if (currentUser != null) {
+            //val emailString = emailAddr.text.toString()
+            //val intent = Intent(this@SignInScreen, MainActivity::class.java)
+            //intent.putExtra("emailAddr", emailString)
             startActivity(Intent(this@SignInScreen, MainActivity::class.java))
         }
     }
@@ -69,6 +73,12 @@ class SignInScreen : AppCompatActivity() {
                         Log.d(TAG, "signInWithEmail:success")
                         val user = auth.currentUser
                         Toast.makeText(this, "Bejelentkezés sikeres :)", Toast.LENGTH_LONG).show()
+
+                        //email továbbítása mainactivitynek
+                        val emailString = emailAddr.text.toString()
+                        val intent = Intent(this@SignInScreen, MainActivity::class.java)
+                        intent.putExtra("emailAddr", emailString)
+
                         startActivity(Intent(this@SignInScreen, MainActivity::class.java))
                     } else {
                         Log.w(TAG, "signInWithEmail:failure", task.exception)

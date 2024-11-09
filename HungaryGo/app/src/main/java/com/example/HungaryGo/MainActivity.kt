@@ -11,6 +11,7 @@ import android.location.Location
 import com.google.android.gms.location.LocationRequest
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -36,12 +37,16 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.ktx.Firebase
+
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener  {
@@ -53,6 +58,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback1: LocationCallback
+    private lateinit var auth: FirebaseAuth
 
     val db = FirebaseDatabase.getInstance()
     //Markerek elhelyezése
@@ -72,13 +78,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
     var follows : Boolean = false
 
-
     private lateinit var drawerLayout: DrawerLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val tagname = "Ez egy proba"
+        val tagvalue = "proba"
+        Log.d(tagname,tagvalue)
+
+        auth=Firebase.auth
 
         //sidemenu
 
@@ -89,7 +100,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
         setSupportActionBar(toolbar)
 
         //toolbar felirata
-        supportActionBar?.title = "Üdv a HungaryGo-ban! :)"
+        supportActionBar?.title = "Üdv, ${auth.currentUser?.email}"
 
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         navigationView.setNavigationItemSelectedListener(this)
@@ -200,11 +211,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                                 if (!markerLocations.containsKey(buildingName)) {
 
                                     currentList.add(buildingName)
+                                    Log.d("BuildId","name: "+buildingName)
+
 
                                     val buildingMap = buildingSnapshot.value as Map<String, Any>
-
+                                    val buildId = buildingMap["Id"] as String
                                     val latitude = buildingMap["latitude"] as Double
                                     val longitude = buildingMap["longitude"] as Double
+
+                                    currentList.add(buildId)
+
+                                    Log.d("BuildId",buildId)
 
                                     // Lehelyezi/ hozzáadja a Map-hez a markereket
                                     val actualMarker: MarkerOptions = MarkerOptions()
@@ -250,6 +267,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
                         val nonNullableCurrentLocationPack: String = currentLocationPack!!
                         getLocationData(nonNullableCurrentLocationPack)
+
+
+
+
+
+
                     }
 
 
@@ -264,6 +287,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
 
     fun getLocationData(locationPackName: String) {
+        val dbfirestore = FirebaseFirestore.getInstance()
+        val currentUserEmail = auth.currentUser?.email.toString()
+        val collectionRef = dbfirestore.collection("userpoints").document(currentUserEmail).collection("inprogress")
+
+
         val locationPacksRef = db.getReference("location packs")
         locationPacksRef.child(locationPackName).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -276,6 +304,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                     val actualMarker: MarkerOptions = MarkerOptions()
                             .position(LatLng(latitude, longitude))
 
+                    val locationPoint = hashMapOf(
+                        locationSnapshot.key to 0
+                    )
+                    collectionRef.document(locationPackName).set(locationPoint, SetOptions.merge())
+
                     currentLocationPackList[locationSnapshot.key]=actualMarker
 
                 }
@@ -286,6 +319,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                 println("Sikertelen adatlekérés: ${error.message}")
             }
         })
+
+
+        //val collectionRef = db.collection("userpoints").document(currentUserEmail).collection("inprogress")
+        /*
+        for((title, marker) in currentLocationPackList)
+        {
+            val currentLocationTitle = title.toString()
+            val locationPoint = hashMapOf(
+                currentLocationTitle to 0
+            )
+            collectionRef.document(locationPackName).set(locationPoint, SetOptions.merge())
+        }*/
     }
 
     /*

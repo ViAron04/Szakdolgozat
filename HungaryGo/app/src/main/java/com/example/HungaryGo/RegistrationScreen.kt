@@ -90,6 +90,14 @@ class RegistrationScreen : AppCompatActivity() {
                                 Log.w(TAG, "Error adding user to Firestore", e)
                             }
 
+                        //val userInProgress = db.collection("userpoints").document(emailNonNullable)
+                        /*userInProgress.collection("inprogress").document("levelsInProgress").set(emptyMap<String,Any>())
+                            .addOnSuccessListener {
+                                Log.d(TAG, " InProgress collection added")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w(TAG, "Error adding InProgress collection", e)
+                            }*/
 
                         val intent = Intent(this@RegistrationScreen, SignInScreen::class.java)
                         startActivity(intent)
