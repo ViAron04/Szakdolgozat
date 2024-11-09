@@ -169,8 +169,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                     .setMessage("A(z) $locationName-hez értél!")
                     .setCancelable(true)
                     .setPositiveButton("OK") { dialog, _ ->
-                        Toast.makeText(applicationContext, "Ilyenkor menne az adat a firestoreba", Toast.LENGTH_SHORT).show()
+                        val dbfirestore = FirebaseFirestore.getInstance()
+                        val currentUserEmail = auth.currentUser?.email.toString()
+                        val collectionRef = dbfirestore.collection("userpoints").document(currentUserEmail).collection("inprogress")
+
+                        val locationPoint = hashMapOf(
+                            locationName to 1
+                        )
+                        var currentLocationPackNonNullable = currentLocationPack.toString()
+                        collectionRef.document(currentLocationPackNonNullable).set(locationPoint, SetOptions.merge())
+                        Toast.makeText(applicationContext, "Helyszín megcsinálva!", Toast.LENGTH_SHORT).show()
+
                         dialog.dismiss()
+                        checkLocations()
                     }
 
                 val alertDialog = dialogBuilder.create()
@@ -267,12 +278,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
                         val nonNullableCurrentLocationPack: String = currentLocationPack!!
                         getLocationData(nonNullableCurrentLocationPack)
-
-
-
-
-
-
                     }
 
 
@@ -321,16 +326,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
         })
 
 
-        //val collectionRef = db.collection("userpoints").document(currentUserEmail).collection("inprogress")
-        /*
-        for((title, marker) in currentLocationPackList)
-        {
-            val currentLocationTitle = title.toString()
-            val locationPoint = hashMapOf(
-                currentLocationTitle to 0
-            )
-            collectionRef.document(locationPackName).set(locationPoint, SetOptions.merge())
-        }*/
+
     }
 
     /*
@@ -491,5 +487,32 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
         return true
     }
 
+
+    //ellenőrzi, megvan-e az összes helyszín a pályából
+    fun checkLocations() {
+        val dbfirestore = FirebaseFirestore.getInstance()
+        val currentUserEmail = auth.currentUser?.email.toString()
+        val currentLocatipnPackNonNullable1 = currentLocationPack.toString()
+        val documentRef = dbfirestore.collection("userpoints").document(currentUserEmail).collection("inprogress").document(currentLocatipnPackNonNullable1)
+
+        documentRef.get().addOnSuccessListener { docuRef ->
+                val data = docuRef.data
+
+                //a document összes eleme 1?
+                val allOne = data?.values?.all{it==1}
+
+                    if (allOne == true) {
+                        Log.d("FirestoreCheck", "All values are 1.")
+
+                        val dialogBuilder = AlertDialog.Builder(this@MainActivity)
+                        dialogBuilder.setTitle("Megcsináltad!")
+                            .setMessage("Gratulálok, teljesítetted a $currentLocationPack pályát!")
+                            .setCancelable(true)
+                            .setPositiveButton("OK") { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                    }
+        }
+    }
 
 }
