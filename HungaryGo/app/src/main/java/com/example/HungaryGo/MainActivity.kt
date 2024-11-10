@@ -48,8 +48,8 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.ktx.Firebase
 
 
-
-class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener  {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback,
+    NavigationView.OnNavigationItemSelectedListener {
 
     var mGoogleMap: GoogleMap? = null
 
@@ -61,22 +61,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
     private lateinit var auth: FirebaseAuth
 
     val db = FirebaseDatabase.getInstance()
+
     //Markerek elhelyezése
-    public val markerLocations: MutableMap<String? ,MarkerOptions> = mutableMapOf()
+    public val markerLocations: MutableMap<String?, MarkerOptions> = mutableMapOf()
 
     lateinit var toggle: ActionBarDrawerToggle
 
     var currentLocationPack: String? = null
 
-    private var satelliteOn : Boolean = false
+    private var satelliteOn: Boolean = false
 
     //pályák és a bennük található helyek listája (currentLocationPack megtalálásához)
     val locationPackList: MutableMap<String?, MutableList<String?>> = mutableMapOf()
 
     //a jelenleg kiválasztott pálya helyszínei
-    val currentLocationPackList: MutableMap<String? ,MarkerOptions> = mutableMapOf()
+    val currentLocationPackList: MutableMap<String?, MarkerOptions> = mutableMapOf()
 
-    var follows : Boolean = false
+    var follows: Boolean = false
 
     private lateinit var drawerLayout: DrawerLayout
 
@@ -87,9 +88,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
         val tagname = "Ez egy proba"
         val tagvalue = "proba"
-        Log.d(tagname,tagvalue)
+        Log.d(tagname, tagvalue)
 
-        auth=Firebase.auth
+        auth = Firebase.auth
 
         //sidemenu
 
@@ -105,7 +106,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         navigationView.setNavigationItemSelectedListener(this)
 
-        val toggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open, R.string.close)
+        val toggle =
+            ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open, R.string.close)
 
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
@@ -113,8 +115,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
         //sidemenu vége
 
 
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
+        fusedLocationClient =
+            LocationServices.getFusedLocationProviderClient(this) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
         getCurrentLocationUser()
 
         var currentMarker: Marker? = null
@@ -136,15 +138,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                     val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
                     val icon = BitmapDescriptorFactory.fromResource(R.drawable.szemuveges_atmeneti)
 
-                    currentMarker = mGoogleMap?.addMarker(MarkerOptions().position(latLng).title("Szerénységem").icon(icon))!!
+                    currentMarker = mGoogleMap?.addMarker(
+                        MarkerOptions().position(latLng).title("Szerénységem").icon(icon)
+                    )!!
 
 
-                    for((locationName,marker) in currentLocationPackList){
+                    for ((locationName, marker) in currentLocationPackList) {
                         val distance = FloatArray(1)
-                        Location.distanceBetween(marker.position.latitude, marker.position.longitude, //megnézi, mekkora a táv a markerek és a játékos között
-                            latLng.latitude, latLng.longitude, distance)
+                        Location.distanceBetween(
+                            marker.position.latitude,
+                            marker.position.longitude, //megnézi, mekkora a táv a markerek és a játékos között
+                            latLng.latitude,
+                            latLng.longitude,
+                            distance
+                        )
 
-                        if(distance[0] < 20 && locationName != currentNearbyLocation){
+                        if (distance[0] < 20 && locationName != currentNearbyLocation) {
 
                             showNearInfoWindow(locationName)
                             //Toast.makeText(applicationContext, "Közel vagy ${locationName}-hoz", Toast.LENGTH_LONG).show()
@@ -155,7 +164,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
                     val newLatLng = LatLng(location.latitude, location.longitude)
 
-                    if(follows) { //a goToMe funkcióban állítható
+                    if (follows) { //a goToMe funkcióban állítható
                         mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLng(newLatLng)) //a kamera ezáltal követi a felhasználót
                     }
                 }
@@ -163,7 +172,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
             //szövegablak ha közel érek
             private fun showNearInfoWindow(locationName: String?) {
-                val dialogBuilder = AlertDialog.Builder(this@MainActivity) // `this` should be your Activity context
+                val dialogBuilder =
+                    AlertDialog.Builder(this@MainActivity) // `this` should be your Activity context
 
                 dialogBuilder.setTitle("Közel vagy!")
                     .setMessage("A(z) $locationName-hez értél!")
@@ -171,17 +181,25 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                     .setPositiveButton("OK") { dialog, _ ->
                         val dbfirestore = FirebaseFirestore.getInstance()
                         val currentUserEmail = auth.currentUser?.email.toString()
-                        val collectionRef = dbfirestore.collection("userpoints").document(currentUserEmail).collection("inprogress")
+                        val collectionRef =
+                            dbfirestore.collection("userpoints").document(currentUserEmail)
+                                .collection("inprogress")
 
                         val locationPoint = hashMapOf(
                             locationName to 1
                         )
                         var currentLocationPackNonNullable = currentLocationPack.toString()
-                        collectionRef.document(currentLocationPackNonNullable).set(locationPoint, SetOptions.merge())
-                        Toast.makeText(applicationContext, "Helyszín megcsinálva!", Toast.LENGTH_SHORT).show()
+                        collectionRef.document(currentLocationPackNonNullable)
+                            .set(locationPoint, SetOptions.merge())
+                        Toast.makeText(
+                            applicationContext,
+                            "Helyszín megcsinálva!",
+                            Toast.LENGTH_SHORT
+                        ).show()
 
-                        dialog.dismiss()
                         checkLocations()
+                        dialog.dismiss()
+
                     }
 
                 val alertDialog = dialogBuilder.create()
@@ -199,12 +217,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
     }
 
     //markerek lehelyezése, az infowindowra történő kattintás kezelése
-    private fun getLocationPacks()
-    {
+    private fun getLocationPacks() {
         //belép a location packsba
         val locationPacksRef = db.getReference("location packs")
 
-        locationPacksRef.addListenerForSingleValueEvent(object : ValueEventListener { //csak egyszer kéri el az adatokat az adatbázisból
+        locationPacksRef.addListenerForSingleValueEvent(object :
+            ValueEventListener { //csak egyszer kéri el az adatokat az adatbázisból
             override fun onDataChange(snapshot: DataSnapshot) {
 
                 if (snapshot.exists()) { //létezik-e az adat
@@ -212,43 +230,43 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                     for (buildingSnapshot1 in snapshot.children) { //Pl. Pannon Egyetem, Vasszécseny kör
                         val locationPack = buildingSnapshot1
 
-                            var currentList: MutableList<String?> = mutableListOf()
+                        var currentList: MutableList<String?> = mutableListOf()
 
-                            for (buildingSnapshot in locationPack.children) {
-                                val buildingName =
-                                    buildingSnapshot.key  //Pl. "A épület", "I épület"
-
-
-                                if (!markerLocations.containsKey(buildingName)) {
-
-                                    currentList.add(buildingName)
-                                    Log.d("BuildId","name: "+buildingName)
+                        for (buildingSnapshot in locationPack.children) {
+                            val buildingName =
+                                buildingSnapshot.key  //Pl. "A épület", "I épület"
 
 
-                                    val buildingMap = buildingSnapshot.value as Map<String, Any>
-                                    val buildId = buildingMap["Id"] as String
-                                    val latitude = buildingMap["latitude"] as Double
-                                    val longitude = buildingMap["longitude"] as Double
+                            if (!markerLocations.containsKey(buildingName)) {
 
-                                    currentList.add(buildId)
+                                currentList.add(buildingName)
+                                Log.d("BuildId", "name: " + buildingName)
 
-                                    Log.d("BuildId",buildId)
 
-                                    // Lehelyezi/ hozzáadja a Map-hez a markereket
-                                    val actualMarker: MarkerOptions = MarkerOptions()
-                                        .position(LatLng(latitude, longitude))
-                                        .title(buildingName)
-                                        .draggable(false)
+                                val buildingMap = buildingSnapshot.value as Map<String, Any>
+                                val buildId = buildingMap["Id"] as String
+                                val latitude = buildingMap["latitude"] as Double
+                                val longitude = buildingMap["longitude"] as Double
 
-                                    markerLocations[buildingName] = actualMarker
+                                currentList.add(buildId)
 
-                                    mGoogleMap?.addMarker(actualMarker)
+                                Log.d("BuildId", buildId)
 
-                                    mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainActivity))
-                                }
+                                // Lehelyezi/ hozzáadja a Map-hez a markereket
+                                val actualMarker: MarkerOptions = MarkerOptions()
+                                    .position(LatLng(latitude, longitude))
+                                    .title(buildingName)
+                                    .draggable(false)
+
+                                markerLocations[buildingName] = actualMarker
+
+                                mGoogleMap?.addMarker(actualMarker)
+
+                                mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainActivity))
                             }
+                        }
 
-                            locationPackList[locationPack.key]=currentList;
+                        locationPackList[locationPack.key] = currentList;
                     }
 
 
@@ -259,18 +277,25 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                 //infowindowra kattintás
                 mGoogleMap?.setOnInfoWindowClickListener { marker ->
                     if (locationPackList.isEmpty()) {
-                        Toast.makeText(this@MainActivity, "Még töltök, kérlek várj...", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Még töltök, kérlek várj...",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         return@setOnInfoWindowClickListener
-                    }
-                    else{
-                        Toast.makeText(this@MainActivity, "Ennél a markernél történt kattintás: ${marker.title}", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Ennél a markernél történt kattintás: ${marker.title}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         var locationPackDisplay: TextView? = findViewById(R.id.levelDisplay)
 
                         //megkeresi a location_packet
                         for ((locationPack1, location) in locationPackList) {
-                            if(location.contains(marker.title)){
+                            if (location.contains(marker.title)) {
                                 locationPackDisplay?.setText(locationPack1)
-                                currentLocationPack=locationPack1
+                                currentLocationPack = locationPack1
                                 break
                             }
                         }
@@ -284,6 +309,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
                 }
 
             }
+
             override fun onCancelled(error: DatabaseError) { //hibakezelés
                 println("Error getting data: ${error.message}")
             }
@@ -294,37 +320,39 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
     fun getLocationData(locationPackName: String) {
         val dbfirestore = FirebaseFirestore.getInstance()
         val currentUserEmail = auth.currentUser?.email.toString()
-        val collectionRef = dbfirestore.collection("userpoints").document(currentUserEmail).collection("inprogress")
+        val collectionRef =
+            dbfirestore.collection("userpoints").document(currentUserEmail).collection("inprogress")
 
 
         val locationPacksRef = db.getReference("location packs")
-        locationPacksRef.child(locationPackName).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                for (locationSnapshot in snapshot.children) {
+        locationPacksRef.child(locationPackName)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (locationSnapshot in snapshot.children) {
 
-                    val buildingMap = locationSnapshot.value as Map<String, Any>
-                    val latitude = buildingMap["latitude"] as Double
-                    val longitude = buildingMap["longitude"] as Double
+                        val buildingMap = locationSnapshot.value as Map<String, Any>
+                        val latitude = buildingMap["latitude"] as Double
+                        val longitude = buildingMap["longitude"] as Double
 
-                    val actualMarker: MarkerOptions = MarkerOptions()
+                        val actualMarker: MarkerOptions = MarkerOptions()
                             .position(LatLng(latitude, longitude))
 
-                    val locationPoint = hashMapOf(
-                        locationSnapshot.key to 0
-                    )
-                    collectionRef.document(locationPackName).set(locationPoint, SetOptions.merge())
+                        val locationPoint = hashMapOf(
+                            locationSnapshot.key to 0
+                        )
+                        collectionRef.document(locationPackName)
+                            .set(locationPoint, SetOptions.merge())
 
-                    currentLocationPackList[locationSnapshot.key]=actualMarker
+                        currentLocationPackList[locationSnapshot.key] = actualMarker
 
+                    }
                 }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-                // Hibakezelés
-                println("Sikertelen adatlekérés: ${error.message}")
-            }
-        })
-
+                override fun onCancelled(error: DatabaseError) {
+                    // Hibakezelés
+                    println("Sikertelen adatlekérés: ${error.message}")
+                }
+            })
 
 
     }
@@ -340,10 +368,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
     private fun getCurrentLocationUser() {
         //engedély ellenőrzése, haa nincsenek meg, engedélyt kér
         if (ActivityCompat.checkSelfPermission(
-                this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                this, android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), FINE_PERMISSION_CODE)
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                FINE_PERMISSION_CODE
+            )
             return
         }
 
@@ -352,10 +388,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
             if (location != null) {
                 currentLocation = location
                 //kiírja a koordinátákat, ha elérhető lokáció
-                Toast.makeText(applicationContext, "${currentLocation.latitude}, ${currentLocation.longitude}",
-                    Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    applicationContext, "${currentLocation.latitude}, ${currentLocation.longitude}",
+                    Toast.LENGTH_LONG
+                ).show()
 
-                val mapFragment = supportFragmentManager.findFragmentById(R.id.mapFelulet) as SupportMapFragment
+                val mapFragment =
+                    supportFragmentManager.findFragmentById(R.id.mapFelulet) as SupportMapFragment
                 mapFragment.getMapAsync(this)
             }
         }
@@ -363,13 +402,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
 
     //ha a felugró ablakban nem engedélyezzük a felhasználást, akkor kiirja alanti üzenetet
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             FINE_PERMISSION_CODE -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getCurrentLocationUser()
             } else {
-                Toast.makeText(this, "Kérem engedélyezze a helymegosztást!", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Kérem engedélyezze a helymegosztást!", Toast.LENGTH_LONG)
+                    .show()
             }
         }
     }
@@ -389,16 +433,28 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
         Priority.PRIORITY_HIGH_ACCURACY
 
 
-
-
         // ellenőrzés
         try {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 //locationRequest megszerzi a helyadatokat, locationCallbacknek továbbküldi
-                    fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback1, null)
+                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback1, null)
             } else {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), FINE_PERMISSION_CODE)
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ),
+                    FINE_PERMISSION_CODE
+                )
             }
         } catch (e: SecurityException) {
             e.printStackTrace()
@@ -417,11 +473,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
 
     fun goToMe(view: View) {
         val goToMeButtonButton: Button = findViewById(R.id.goToMe)
-        if(follows){
+        if (follows) {
             follows = false;
             goToMeButtonButton.setText("Követés bekapcsolása")
-        }
-        else{
+        } else {
             val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
             mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f))
             follows = true;
@@ -448,34 +503,37 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
     }
 
 
-
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.kalandKeres -> {
                 startActivity(Intent(this@MainActivity, AdventureList::class.java))
             }
+
             R.id.ujKaland -> {
                 startActivity(Intent(this@MainActivity, Maker::class.java))
             }
+
             R.id.dicsFal -> {
                 startActivity(Intent(this@MainActivity, gloryWall::class.java))
             }
-            R.id.stat ->   {
+
+            R.id.stat -> {
                 Toast.makeText(this, "statisztika", Toast.LENGTH_LONG).show()
             }
+
             R.id.terkep_kinezet -> {
                 val terkepKinezetTitle = item
-                if(satelliteOn == false){
+                if (satelliteOn == false) {
                     mGoogleMap?.mapType = GoogleMap.MAP_TYPE_SATELLITE
                     terkepKinezetTitle.setTitle("Alap nézet")
                     satelliteOn = true
-                }
-                else{
+                } else {
                     mGoogleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
                     terkepKinezetTitle.setTitle("Műhold nézet")
                     satelliteOn = false
                 }
             }
+
             R.id.beallitasok -> Toast.makeText(this, "beallitasok", Toast.LENGTH_LONG).show()
 
             R.id.kijelentkezes -> {
@@ -493,25 +551,36 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnN
         val dbfirestore = FirebaseFirestore.getInstance()
         val currentUserEmail = auth.currentUser?.email.toString()
         val currentLocatipnPackNonNullable1 = currentLocationPack.toString()
-        val documentRef = dbfirestore.collection("userpoints").document(currentUserEmail).collection("inprogress").document(currentLocatipnPackNonNullable1)
+        val documentRef =
+            dbfirestore.collection("userpoints").document(currentUserEmail).collection("inprogress")
+                .document(currentLocatipnPackNonNullable1)
+
+
 
         documentRef.get().addOnSuccessListener { docuRef ->
-                val data = docuRef.data
+            val data = docuRef.data
 
-                //a document összes eleme 1?
-                val allOne = data?.values?.all{it==1}
+            //a document összes eleme 1?
+            val allOne = data?.all { (key, value) ->
+                val isOne = value == 1L || value == 1.0
+                Log.d("FirestoreCheck", "Field: $key, Value: $value, IsOne: $isOne")
+                isOne
+            } ?: false
 
-                    if (allOne == true) {
-                        Log.d("FirestoreCheck", "All values are 1.")
+            //dialog megjelenítése
+            if (allOne) {
+                Log.d("FirestoreCheck", "All values are 1.")
 
-                        val dialogBuilder = AlertDialog.Builder(this@MainActivity)
-                        dialogBuilder.setTitle("Megcsináltad!")
-                            .setMessage("Gratulálok, teljesítetted a $currentLocationPack pályát!")
-                            .setCancelable(true)
-                            .setPositiveButton("OK") { dialog, _ ->
-                                dialog.dismiss()
-                            }
+                val dialogBuilder = AlertDialog.Builder(this@MainActivity)
+                dialogBuilder.setTitle("Megcsináltad!")
+                    .setMessage("Gratulálok, teljesítetted a $currentLocationPack pályát!")
+                    .setCancelable(true)
+                    .setPositiveButton("OK") { dialog, _ ->
+                        dialog.dismiss()
                     }
+                val alertDialog = dialogBuilder.create()
+                alertDialog.show()
+            }
         }
     }
 
