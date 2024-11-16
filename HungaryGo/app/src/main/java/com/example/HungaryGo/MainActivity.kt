@@ -123,13 +123,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         var currentNearbyLocation: String? = null
 
+        getLocationPacks()
+
         locationCallback1 = object : LocationCallback() {
 
             override fun onLocationResult(locationResult: LocationResult) { //akkor hívódik meg, ha új helymeghatározási eredmények érkeznek
                 super.onLocationResult(locationResult)
                 val location = locationResult.lastLocation //kiszűri a legutóbbi pozíciót
 
-                getLocationPacks() //Firebase-ben tárolt helyeket hívja le és jeleníti meg
+                //getLocationPacks() //Firebase-ben tárolt helyeket hívja le és jeleníti meg
 
                 if (location != null) {
                     currentMarker?.remove()
@@ -216,6 +218,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return super.onOptionsItemSelected(item)
     }
 
+    var isLoaded = false
     //markerek lehelyezése, az infowindowra történő kattintás kezelése
     private fun getLocationPacks() {
         //belép a location packsba
@@ -262,21 +265,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
                                 mGoogleMap?.addMarker(actualMarker)
 
-                                mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainActivity))
+
                             }
                         }
 
                         locationPackList[locationPack.key] = currentList;
+                        mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainActivity, locationPackList))
                     }
 
-
+                isLoaded=true;
                 } else {
                     println("Nem találtam helyszíneket az adatbázisban")
                 }
 
                 //infowindowra kattintás
                 mGoogleMap?.setOnInfoWindowClickListener { marker ->
-                    if (locationPackList.isEmpty()) {
+                    if (!isLoaded) {
                         Toast.makeText(
                             this@MainActivity,
                             "Még töltök, kérlek várj...",

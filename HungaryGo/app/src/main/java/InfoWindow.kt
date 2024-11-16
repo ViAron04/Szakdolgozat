@@ -8,7 +8,7 @@ import com.example.HungaryGo.R
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 
-class CustomInfoWindowForGoogleMap(context: Context) : GoogleMap.InfoWindowAdapter {
+class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksList: MutableMap<String?, MutableList<String?>>) : GoogleMap.InfoWindowAdapter {
 
     val mContext = context
     var mWindow = (context as Activity).layoutInflater.inflate(R.layout.infowindow, null)
@@ -19,10 +19,15 @@ class CustomInfoWindowForGoogleMap(context: Context) : GoogleMap.InfoWindowAdapt
         val location = view.findViewById<TextView>(R.id.location)
         val startButton = view.findViewById<Button>(R.id.startButton)
 
+        var locationPackName: String? = null
 
-        val location_packName =  "Pálya neve"
+        for ((locationPack, loacation) in locationPacksList)
+        {
+            if (loacation.contains(marker.title))
+                locationPackName=locationPack
+        }
 
-        location_pack.text = location_packName
+        location_pack.text = locationPackName
         location.text = marker.title
 
         /*
