@@ -38,8 +38,9 @@
             android:id="@+id/button"
             android:layout_width="200dp"
             android:layout_height="67dp"
-            android:layout_weight="1"
             android:layout_margin="15dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/registrationbutton"
             android:onClick="signInClick"
             android:text="Bejelentkezés" />
 
@@ -49,6 +50,7 @@
             android:layout_height="67dp"
             android:layout_weight="1"
             android:layout_margin="15dp"
+            android:backgroundTint="@color/registrationbutton"
             android:onClick="registrationClick"
             android:text="Regisztráció" />
     </LinearLayout>
@@ -57,6 +59,7 @@
         android:id="@+id/button3"
         android:layout_width="300dp"
         android:layout_height="50dp"
+        android:backgroundTint="@color/registrationbutton"
         android:onClick="googleSignIn"
         android:text="Google bejelentkezés"/>
 

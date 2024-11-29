@@ -111,9 +111,6 @@ class Maker : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mGoogleMap = googleMap
 
-        //Tedd választhatóvá!!
-        //mGoogleMap?.mapType = GoogleMap.MAP_TYPE_SATELLITE
-
         val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
 
         // milyen gyakran és minőségben érkezzenek helyadatok?

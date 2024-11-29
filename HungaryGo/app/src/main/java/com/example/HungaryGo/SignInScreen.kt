@@ -1,13 +1,11 @@
 package com.example.HungaryGo
 
 import android.content.ContentValues.TAG
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -43,9 +41,9 @@ class SignInScreen : AppCompatActivity() {
         val currentUser = auth.currentUser
         if (currentUser != null) {
             //val emailString = emailAddr.text.toString()
-            //val intent = Intent(this@SignInScreen, MainActivity::class.java)
+            //val intent = Intent(this@SignInScreen, MainScreen::class.java)
             //intent.putExtra("emailAddr", emailString)
-            startActivity(Intent(this@SignInScreen, MainActivity::class.java))
+            startActivity(Intent(this@SignInScreen, MainScreen::class.java))
         }
     }
 
@@ -76,10 +74,10 @@ class SignInScreen : AppCompatActivity() {
 
                         //email továbbítása mainactivitynek
                         val emailString = emailAddr.text.toString()
-                        val intent = Intent(this@SignInScreen, MainActivity::class.java)
+                        val intent = Intent(this@SignInScreen, MainScreen::class.java)
                         intent.putExtra("emailAddr", emailString)
 
-                        startActivity(Intent(this@SignInScreen, MainActivity::class.java))
+                        startActivity(Intent(this@SignInScreen, MainScreen::class.java))
                     } else {
                         Log.w(TAG, "signInWithEmail:failure", task.exception)
                         Toast.makeText(this, "Nem sikerült a bejelentkezés :(", Toast.LENGTH_LONG).show()
@@ -129,7 +127,7 @@ class SignInScreen : AppCompatActivity() {
                     Log.d(TAG, "signInWithCredential:success")
                     val user = auth.currentUser
                     Toast.makeText(this, "Bejelentkezés sikeres :)", Toast.LENGTH_LONG).show()
-                    startActivity(Intent(this@SignInScreen, MainActivity::class.java))
+                    startActivity(Intent(this@SignInScreen, MainScreen::class.java))
                 } else {
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
                     Toast.makeText(this, "Nem sikerült a bejelentkezés :(", Toast.LENGTH_LONG).show()

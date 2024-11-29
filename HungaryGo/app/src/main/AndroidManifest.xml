@@ -49,7 +49,7 @@
             android:value="@string/google_map_api_key" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".MainScreen"
             android:exported="true"
             android:screenOrientation="portrait" />
     </application>

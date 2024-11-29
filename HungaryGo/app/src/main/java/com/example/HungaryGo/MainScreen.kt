@@ -48,7 +48,7 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.ktx.Firebase
 
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback,
+class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     NavigationView.OnNavigationItemSelectedListener {
 
     var mGoogleMap: GoogleMap? = null
@@ -84,24 +84,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        val tagname = "Ez egy proba"
-        val tagvalue = "proba"
-        Log.d(tagname, tagvalue)
+        setContentView(R.layout.activity_main_screen)
 
         auth = Firebase.auth
 
         //sidemenu
 
         drawerLayout = findViewById(R.id.mapScreen)
-        val navView: NavigationView = findViewById(R.id.nav_view)
+        //val navView: NavigationView = findViewById(R.id.nav_view)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
         //toolbar felirata
-        supportActionBar?.title = "Üdv, ${auth.currentUser?.email}"
+        //supportActionBar?.title = "Üdv, ${auth.currentUser?.email}"
 
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         navigationView.setNavigationItemSelectedListener(this)
@@ -175,7 +171,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             //szövegablak ha közel érek
             private fun showNearInfoWindow(locationName: String?) {
                 val dialogBuilder =
-                    AlertDialog.Builder(this@MainActivity) // `this` should be your Activity context
+                    AlertDialog.Builder(this@MainScreen)
 
                 dialogBuilder.setTitle("Közel vagy!")
                     .setMessage("A(z) $locationName-hez értél!")
@@ -236,41 +232,43 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                         var currentList: MutableList<String?> = mutableListOf()
 
                         for (buildingSnapshot in locationPack.children) {
-                            val buildingName =
-                                buildingSnapshot.key  //Pl. "A épület", "I épület"
+                            if(buildingSnapshot.key != "rating") {
+                                val buildingName =
+                                    buildingSnapshot.key  //Pl. "A épület", "I épület"
 
 
-                            if (!markerLocations.containsKey(buildingName)) {
+                                if (!markerLocations.containsKey(buildingName)) {
 
-                                currentList.add(buildingName)
-                                Log.d("BuildId", "name: " + buildingName)
-
-
-                                val buildingMap = buildingSnapshot.value as Map<String, Any>
-                                val buildId = buildingMap["Id"] as String
-                                val latitude = buildingMap["latitude"] as Double
-                                val longitude = buildingMap["longitude"] as Double
-
-                                currentList.add(buildId)
-
-                                Log.d("BuildId", buildId)
-
-                                // Lehelyezi/ hozzáadja a Map-hez a markereket
-                                val actualMarker: MarkerOptions = MarkerOptions()
-                                    .position(LatLng(latitude, longitude))
-                                    .title(buildingName)
-                                    .draggable(false)
-
-                                markerLocations[buildingName] = actualMarker
-
-                                mGoogleMap?.addMarker(actualMarker)
+                                    currentList.add(buildingName)
+                                    Log.d("BuildId", "name: " + buildingName)
 
 
+                                    val buildingMap = buildingSnapshot.value as Map<String, Any>
+                                    val buildId = buildingMap["Id"] as String
+                                    val latitude = buildingMap["latitude"] as Double
+                                    val longitude = buildingMap["longitude"] as Double
+
+                                    currentList.add(buildId)
+
+                                    Log.d("BuildId", buildId)
+
+                                    // Lehelyezi/ hozzáadja a Map-hez a markereket
+                                    val actualMarker: MarkerOptions = MarkerOptions()
+                                        .position(LatLng(latitude, longitude))
+                                        .title(buildingName)
+                                        .draggable(false)
+
+                                    markerLocations[buildingName] = actualMarker
+
+                                    mGoogleMap?.addMarker(actualMarker)
+
+
+                                }
                             }
                         }
 
                         locationPackList[locationPack.key] = currentList;
-                        mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainActivity, locationPackList))
+                        mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackList))
                     }
 
                 isLoaded=true;
@@ -282,14 +280,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 mGoogleMap?.setOnInfoWindowClickListener { marker ->
                     if (!isLoaded) {
                         Toast.makeText(
-                            this@MainActivity,
+                            this@MainScreen,
                             "Még töltök, kérlek várj...",
                             Toast.LENGTH_SHORT
                         ).show()
                         return@setOnInfoWindowClickListener
                     } else {
                         Toast.makeText(
-                            this@MainActivity,
+                            this@MainScreen,
                             "Ennél a markernél történt kattintás: ${marker.title}",
                             Toast.LENGTH_SHORT
                         ).show()
@@ -308,10 +306,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                         val nonNullableCurrentLocationPack: String = currentLocationPack!!
                         getLocationData(nonNullableCurrentLocationPack)
                     }
-
-
                 }
-
             }
 
             override fun onCancelled(error: DatabaseError) { //hibakezelés
@@ -333,22 +328,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (locationSnapshot in snapshot.children) {
+                        if(locationSnapshot.key != "rating") {
+                            val buildingMap = locationSnapshot.value as Map<String, Any>
+                            val latitude = buildingMap["latitude"] as Double
+                            val longitude = buildingMap["longitude"] as Double
 
-                        val buildingMap = locationSnapshot.value as Map<String, Any>
-                        val latitude = buildingMap["latitude"] as Double
-                        val longitude = buildingMap["longitude"] as Double
+                            val actualMarker: MarkerOptions = MarkerOptions()
+                                .position(LatLng(latitude, longitude))
 
-                        val actualMarker: MarkerOptions = MarkerOptions()
-                            .position(LatLng(latitude, longitude))
+                            val locationPoint = hashMapOf(
+                                locationSnapshot.key to 0
+                            )
+                            collectionRef.document(locationPackName)
+                                .set(locationPoint, SetOptions.merge())
 
-                        val locationPoint = hashMapOf(
-                            locationSnapshot.key to 0
-                        )
-                        collectionRef.document(locationPackName)
-                            .set(locationPoint, SetOptions.merge())
-
-                        currentLocationPackList[locationSnapshot.key] = actualMarker
-
+                            currentLocationPackList[locationSnapshot.key] = actualMarker
+                        }
                     }
                 }
 
@@ -370,7 +365,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     //meghatározza  a jelenlegi pozíciót
     private fun getCurrentLocationUser() {
-        //engedély ellenőrzése, haa nincsenek meg, engedélyt kér
+        //engedély ellenőrzése, ha nincsenek meg, engedélyt kér
         if (ActivityCompat.checkSelfPermission(
                 this, android.Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
@@ -416,11 +411,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             FINE_PERMISSION_CODE -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getCurrentLocationUser()
             } else {
-                Toast.makeText(this, "Kérem engedélyezze a helymegosztást!", Toast.LENGTH_LONG)
+                Toast.makeText(this, "Helymegosztás engedélyezése nélkül az alkalmazás nem használható megfelelően :(", Toast.LENGTH_LONG)
                     .show()
             }
         }
     }
+
 
     //akkor hívódik meg, ha működik az API
     override fun onMapReady(googleMap: GoogleMap) {
@@ -510,15 +506,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.kalandKeres -> {
-                startActivity(Intent(this@MainActivity, AdventureList::class.java))
+                startActivity(Intent(this@MainScreen, AdventureList::class.java))
             }
 
             R.id.ujKaland -> {
-                startActivity(Intent(this@MainActivity, Maker::class.java))
+                startActivity(Intent(this@MainScreen, Maker::class.java))
             }
 
             R.id.dicsFal -> {
-                startActivity(Intent(this@MainActivity, gloryWall::class.java))
+                startActivity(Intent(this@MainScreen, gloryWall::class.java))
             }
 
             R.id.stat -> {
@@ -542,7 +538,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
             R.id.kijelentkezes -> {
                 Firebase.auth.signOut()
-                startActivity(Intent(this@MainActivity, SignInScreen::class.java))
+                startActivity(Intent(this@MainScreen, SignInScreen::class.java))
             }
         }
         drawerLayout.closeDrawer(GravityCompat.START)
@@ -575,7 +571,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             if (allOne) {
                 Log.d("FirestoreCheck", "All values are 1.")
 
-                val dialogBuilder = AlertDialog.Builder(this@MainActivity)
+                val dialogBuilder = AlertDialog.Builder(this@MainScreen)
                 dialogBuilder.setTitle("Megcsináltad!")
                     .setMessage("Gratulálok, teljesítetted a $currentLocationPack pályát!")
                     .setCancelable(true)
@@ -586,6 +582,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 alertDialog.show()
             }
         }
+    }
+
+    fun markerReload(view: View) {
+        getLocationPacks()
     }
 
 }

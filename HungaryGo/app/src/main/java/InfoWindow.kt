@@ -3,7 +3,6 @@ import android.content.Context
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
-import com.example.HungaryGo.MainActivity
 import com.example.HungaryGo.R
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
@@ -32,7 +31,7 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
 
         /*
         startButton.setOnClickListener{
-            if(mContext is MainActivity){
+            if(mContext is MainScreen){
                 mContext.startButtonClick(marker)
             }
         }*/
