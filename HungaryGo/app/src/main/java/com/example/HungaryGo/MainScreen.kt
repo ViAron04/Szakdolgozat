@@ -327,26 +327,36 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         locationPacksRef.child(locationPackName)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    for (locationSnapshot in snapshot.children) {
-                        if(locationSnapshot.key != "rating") {
-                            val buildingMap = locationSnapshot.value as Map<String, Any>
-                            val latitude = buildingMap["latitude"] as Double
-                            val longitude = buildingMap["longitude"] as Double
+                    collectionRef.document(locationPackName).get()
+                        .addOnSuccessListener { document ->
+                            if (document.exists()) {
+                                // A dokumentum már létezik, itt kezelheted ezt az esetet.
+                                Log.d(
+                                    "FirestoreCheck",
+                                    "A dokumentum már létezik: $locationPackName"
+                                )
+                            } else {
+                                for (locationSnapshot in snapshot.children) {
+                                    if (locationSnapshot.key != "rating") {
+                                        val buildingMap = locationSnapshot.value as Map<String, Any>
+                                        val latitude = buildingMap["latitude"] as Double
+                                        val longitude = buildingMap["longitude"] as Double
 
-                            val actualMarker: MarkerOptions = MarkerOptions()
-                                .position(LatLng(latitude, longitude))
+                                        val actualMarker: MarkerOptions = MarkerOptions()
+                                            .position(LatLng(latitude, longitude))
 
-                            val locationPoint = hashMapOf(
-                                locationSnapshot.key to 0
-                            )
-                            collectionRef.document(locationPackName)
-                                .set(locationPoint, SetOptions.merge())
+                                        val locationPoint = hashMapOf(
+                                            locationSnapshot.key to 0
+                                        )
+                                        collectionRef.document(locationPackName)
+                                            .set(locationPoint, SetOptions.merge())
 
-                            currentLocationPackList[locationSnapshot.key] = actualMarker
+                                        currentLocationPackList[locationSnapshot.key] = actualMarker
+                                    }
+                                }
+                            }
                         }
-                    }
                 }
-
                 override fun onCancelled(error: DatabaseError) {
                     // Hibakezelés
                     println("Sikertelen adatlekérés: ${error.message}")
