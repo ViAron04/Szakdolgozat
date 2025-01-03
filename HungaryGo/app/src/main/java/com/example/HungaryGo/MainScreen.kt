@@ -232,7 +232,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                         var currentList: MutableList<String?> = mutableListOf()
 
                         for (buildingSnapshot in locationPack.children) {
-                            if(buildingSnapshot.key != "rating") {
+                            if(buildingSnapshot.key != "rating" && buildingSnapshot.key != "image") {
                                 val buildingName =
                                     buildingSnapshot.key  //Pl. "A épület", "I épület"
 
@@ -331,13 +331,22 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                         .addOnSuccessListener { document ->
                             if (document.exists()) {
                                 // A dokumentum már létezik, itt kezelheted ezt az esetet.
-                                Log.d(
-                                    "FirestoreCheck",
-                                    "A dokumentum már létezik: $locationPackName"
-                                )
+                                for (locationSnapshot in snapshot.children) {
+                                    if (locationSnapshot.key != "rating" && locationSnapshot.key != "image") {
+                                        val buildingMap = locationSnapshot.value as Map<String, Any>
+                                        val latitude = buildingMap["latitude"] as Double
+                                        val longitude = buildingMap["longitude"] as Double
+
+                                        val actualMarker: MarkerOptions = MarkerOptions()
+                                            .position(LatLng(latitude, longitude))
+
+                                        currentLocationPackList[locationSnapshot.key] = actualMarker
+                                    }
+                                }
+
                             } else {
                                 for (locationSnapshot in snapshot.children) {
-                                    if (locationSnapshot.key != "rating") {
+                                    if (locationSnapshot.key != "rating" && locationSnapshot.key != "image") {
                                         val buildingMap = locationSnapshot.value as Map<String, Any>
                                         val latitude = buildingMap["latitude"] as Double
                                         val longitude = buildingMap["longitude"] as Double
