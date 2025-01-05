@@ -232,7 +232,14 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                         var currentList: MutableList<String?> = mutableListOf()
 
                         for (buildingSnapshot in locationPack.children) {
-                            if(buildingSnapshot.key != "rating" && buildingSnapshot.key != "image") {
+                            /*if (buildingSnapshot.key == "image")
+                            {
+                                val imgName = buildingSnapshot.value.toString()
+                                if (!markerLocations.containsKey("image")) {
+                                    currentList.add(imgName)
+                                }
+                            }*/
+                            if (buildingSnapshot.key != "rating" && buildingSnapshot.key != "image") {
                                 val buildingName =
                                     buildingSnapshot.key  //Pl. "A épület", "I épület"
 
