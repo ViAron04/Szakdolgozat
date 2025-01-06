@@ -137,9 +137,19 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     val icon = BitmapDescriptorFactory.fromResource(R.drawable.szemuveges_atmeneti)
 
                     currentMarker = mGoogleMap?.addMarker(
-                        MarkerOptions().position(latLng).title("Szerénységem").icon(icon)
+                        MarkerOptions().position(latLng).title("szerenysegem").icon(icon)
                     )!!
 
+                    mGoogleMap?.setOnMarkerClickListener { marker ->
+                        if(marker.title == "szerenysegem")
+                        {
+                            true
+                        }
+                        else
+                        {
+                            false
+                        }
+                    }
 
                     for ((locationName, marker) in currentLocationPackList) {
                         val distance = FloatArray(1)
@@ -295,16 +305,16 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     } else {
                         Toast.makeText(
                             this@MainScreen,
-                            "Ennél a markernél történt kattintás: ${marker.title}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                            "Ennél a markernél történt kattintás: ${marker.title}", Toast.LENGTH_SHORT).show()
                         var locationPackDisplay: TextView? = findViewById(R.id.levelDisplay)
 
                         //megkeresi a location_packet
                         for ((locationPack1, location) in locationPackList) {
                             if (location.contains(marker.title)) {
-                                locationPackDisplay?.setText(locationPack1)
+                        //        locationPackDisplay?.setText(locationPack1)
                                 currentLocationPack = locationPack1
+                                //fejlécre írás
+                                supportActionBar?.title = locationPack1
                                 break
                             }
                         }
