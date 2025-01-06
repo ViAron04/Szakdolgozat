@@ -2,6 +2,7 @@ package com.example.HungaryGo
 
 import android.content.ContentValues.TAG
 import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,7 @@ import android.widget.EditText
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 
@@ -98,6 +100,19 @@ class RegistrationScreen : AppCompatActivity() {
                             .addOnFailureListener { e ->
                                 Log.w(TAG, "Error adding InProgress collection", e)
                             }*/
+
+                        //felhasználónév hozzáadása
+                        val profileUpdates = userProfileChangeRequest {
+                            displayName = usernameRegister
+                        }
+                        val currentUser = Firebase.auth.currentUser
+                        currentUser?.updateProfile(profileUpdates)
+                            ?.addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    Log.d(TAG, "Username added.")
+                                    currentUser.reload()
+                                }
+                            }
 
                         val intent = Intent(this@RegistrationScreen, SignInScreen::class.java)
                         startActivity(intent)

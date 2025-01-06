@@ -97,7 +97,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         setSupportActionBar(toolbar)
 
         //toolbar felirata
-        //supportActionBar?.title = "Üdv, ${auth.currentUser?.email}"
+        supportActionBar?.title = "Üdv, ${auth.currentUser?.displayName}"
 
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         navigationView.setNavigationItemSelectedListener(this)
