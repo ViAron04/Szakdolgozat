@@ -16,6 +16,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 import com.google.firebase.storage.FirebaseStorage
 import com.bumptech.glide.request.RequestOptions
+import java.text.Normalizer
 
 
 class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksList: MutableMap<String?, MutableList<String?>>) : GoogleMap.InfoWindowAdapter {
@@ -24,14 +25,15 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
     val mContext = context
     var mWindow = (context as Activity).layoutInflater.inflate(R.layout.infowindow, null)
 
-    private fun rendowWindowText(marker: Marker, view: View){
+    //eltárolja a már eltöltött képeket
+    private val loadedBitmaps = mutableMapOf<String?, android.graphics.Bitmap>()
 
+    private fun rendowWindowText(marker: Marker, view: View){
         Log.d("Szia", "Lefutottam megint");
         val locationPackImg: ImageView = view.findViewById(R.id.location_img)
         val locationPack = view.findViewById<TextView>(R.id.location_pack)
         val location = view.findViewById<TextView>(R.id.location)
         val startButton = view.findViewById<Button>(R.id.startButton)
-
         var locationPackName: String? = null
 
         for ((locationPack, loacation) in locationPacksList)
@@ -41,31 +43,39 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
         }
 
 
+        //kép megjelenítése
+        fun removeAccents(input: String?): String {
+            val normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
+            return normalized.replace(Regex("\\p{Mn}"), "")
+        }
+
+        val imgName = removeAccents(locationPackName?.lowercase()?.replace(' ','_'))
+
+        if(loadedBitmaps.containsKey(locationPackName))
+        {
+            locationPackImg.setImageBitmap(loadedBitmaps[locationPackName])
+        }else {
+
+            val storage = FirebaseStorage.getInstance()
+            val storageImgReference =
+                storage.getReferenceFromUrl("gs://kotlin-gyak-firebase.appspot.com/location_packs_images/$imgName.jpg")
+
+            val maxDownloadableSize: Long = 500 * 500
+            storageImgReference.getBytes(maxDownloadableSize).addOnSuccessListener { bytes ->
+                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                loadedBitmaps[locationPackName] = bitmap
+
+                //locationPackImg.setImageBitmap(bitmap)
+                marker.showInfoWindow()
+            }
+                .addOnFailureListener { exception ->
+                    Log.d("Firebase", "Kép letöltése sikertelen", exception)
+                }
+        }
+
 
         locationPack.text = locationPackName
         location.text = marker.title
-
-        //kép megjelenítése
-        val storage = FirebaseStorage.getInstance()
-        val storageImgReference = storage.getReferenceFromUrl("gs://kotlin-gyak-firebase.appspot.com/location_packs_images/pannon_egyetem_epuletei.jpg")
-
-        val maxDownloadableSize: Long = 500 * 500
-        storageImgReference.getBytes(maxDownloadableSize).addOnSuccessListener {  bytes->
-            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-
-                locationPackImg.setImageBitmap(bitmap)
-
-        }
-            .addOnFailureListener { exception ->
-                Log.d("Firebase", "Kép letöltése sikertelen", exception)
-            }
-
-        /*
-        startButton.setOnClickListener{
-            if(mContext is MainScreen){
-                mContext.startButtonClick(marker)
-            }
-        }*/
     }
 
     override fun getInfoContents(marker: Marker): View {
