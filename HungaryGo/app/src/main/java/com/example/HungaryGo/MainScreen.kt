@@ -4,9 +4,11 @@ import CustomInfoWindowForGoogleMap
 import android.Manifest
 import android.animation.ValueAnimator
 import android.app.AlertDialog
+import android.app.Dialog
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.location.Location
 import com.google.android.gms.location.LocationRequest
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +18,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
@@ -59,6 +62,10 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback1: LocationCallback
     private lateinit var auth: FirebaseAuth
+
+    object BitmapStore {
+        public val loadedBitmaps = mutableMapOf<String?, android.graphics.Bitmap>()
+    }
 
     val db = FirebaseDatabase.getInstance()
 
@@ -134,12 +141,14 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
                     currentLocation = location
                     val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
-                    val icon = BitmapDescriptorFactory.fromResource(R.drawable.szemuveges_atmeneti)
+                    var icon = BitmapDescriptorFactory.fromResource(R.drawable.usericondemo)
+
 
                     currentMarker = mGoogleMap?.addMarker(
                         MarkerOptions().position(latLng).title("szerenysegem").icon(icon)
                     )!!
 
+                    //kattinthatatlanná tétel
                     mGoogleMap?.setOnMarkerClickListener { marker ->
                         if(marker.title == "szerenysegem")
                         {
@@ -242,14 +251,8 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                         var currentList: MutableList<String?> = mutableListOf()
 
                         for (buildingSnapshot in locationPack.children) {
-                            /*if (buildingSnapshot.key == "image")
-                            {
-                                val imgName = buildingSnapshot.value.toString()
-                                if (!markerLocations.containsKey("image")) {
-                                    currentList.add(imgName)
-                                }
-                            }*/
-                            if (buildingSnapshot.key != "rating" && buildingSnapshot.key != "image") {
+
+                            if (buildingSnapshot.key != "rating" && buildingSnapshot.key != "description") {
                                 val buildingName =
                                     buildingSnapshot.key  //Pl. "A épület", "I épület"
 
@@ -306,6 +309,9 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                         Toast.makeText(
                             this@MainScreen,
                             "Ennél a markernél történt kattintás: ${marker.title}", Toast.LENGTH_SHORT).show()
+
+
+
                         var locationPackDisplay: TextView? = findViewById(R.id.levelDisplay)
 
                         //megkeresi a location_packet
@@ -313,11 +319,16 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                             if (location.contains(marker.title)) {
                         //        locationPackDisplay?.setText(locationPack1)
                                 currentLocationPack = locationPack1
-                                //fejlécre írás
-                                supportActionBar?.title = locationPack1
                                 break
                             }
                         }
+
+                        val loaded: Bitmap = BitmapStore.loadedBitmaps[currentLocationPack]!!
+                        showLPDialog(loaded, "random szöveg")
+
+                        //fejlécre írás
+                        supportActionBar?.title = currentLocationPack
+
                         currentLocationPackList.clear()
 
                         val nonNullableCurrentLocationPack: String = currentLocationPack!!
@@ -349,7 +360,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                             if (document.exists()) {
                                 // A dokumentum már létezik, itt kezelheted ezt az esetet.
                                 for (locationSnapshot in snapshot.children) {
-                                    if (locationSnapshot.key != "rating" && locationSnapshot.key != "image") {
+                                    if (locationSnapshot.key != "rating" && locationSnapshot.key != "description") {
                                         val buildingMap = locationSnapshot.value as Map<String, Any>
                                         val latitude = buildingMap["latitude"] as Double
                                         val longitude = buildingMap["longitude"] as Double
@@ -363,7 +374,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
                             } else {
                                 for (locationSnapshot in snapshot.children) {
-                                    if (locationSnapshot.key != "rating" && locationSnapshot.key != "image") {
+                                    if (locationSnapshot.key != "rating" && locationSnapshot.key != "description") {
                                         val buildingMap = locationSnapshot.value as Map<String, Any>
                                         val latitude = buildingMap["latitude"] as Double
                                         val longitude = buildingMap["longitude"] as Double
@@ -570,7 +581,9 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 }
             }
 
-            R.id.beallitasok -> Toast.makeText(this, "beallitasok", Toast.LENGTH_LONG).show()
+            R.id.beallitasok -> {
+                startActivity(Intent(this@MainScreen, OptionsScreen::class.java))
+            }
 
             R.id.kijelentkezes -> {
                 Firebase.auth.signOut()
@@ -618,6 +631,19 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 alertDialog.show()
             }
         }
+    }
+
+    fun showLPDialog(picture: Bitmap, description: String) {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.location_pack_dialog)
+        dialog.setCancelable(true)
+        val lpImage = dialog.findViewById<ImageView>(R.id.lpImage)
+        val lpDescription = dialog.findViewById<TextView>(R.id.lpDescription)
+
+        lpImage.setImageBitmap(picture)
+        lpDescription.text = description
+
+        dialog.show()
     }
 
     fun markerReload(view: View) {

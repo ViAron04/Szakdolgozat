@@ -16,6 +16,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 import com.google.firebase.storage.FirebaseStorage
 import com.bumptech.glide.request.RequestOptions
+import com.example.HungaryGo.MainScreen
 import java.text.Normalizer
 
 
@@ -26,7 +27,7 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
     var mWindow = (context as Activity).layoutInflater.inflate(R.layout.infowindow, null)
 
     //eltárolja a már eltöltött képeket
-    private val loadedBitmaps = mutableMapOf<String?, android.graphics.Bitmap>()
+
 
     private fun rendowWindowText(marker: Marker, view: View){
         Log.d("Szia", "Lefutottam megint");
@@ -51,9 +52,9 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
 
         val imgName = removeAccents(locationPackName?.lowercase()?.replace(' ','_'))
 
-        if(loadedBitmaps.containsKey(locationPackName))
+        if(MainScreen.BitmapStore.loadedBitmaps.containsKey(locationPackName))
         {
-            locationPackImg.setImageBitmap(loadedBitmaps[locationPackName])
+            locationPackImg.setImageBitmap(MainScreen.BitmapStore.loadedBitmaps[locationPackName])
         }else {
 
             val storage = FirebaseStorage.getInstance()
@@ -63,7 +64,7 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
             val maxDownloadableSize: Long = 500 * 500
             storageImgReference.getBytes(maxDownloadableSize).addOnSuccessListener { bytes ->
                 val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                loadedBitmaps[locationPackName] = bitmap
+                MainScreen.BitmapStore.loadedBitmaps[locationPackName] = bitmap
 
                 //locationPackImg.setImageBitmap(bitmap)
                 marker.showInfoWindow()
