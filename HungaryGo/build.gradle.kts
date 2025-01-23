@@ -2,7 +2,7 @@ buildscript {
     val kotlin_version by extra("2.0.21")
     dependencies {
         classpath("com.google.gms:google-services:4.4.2")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")
     }
     repositories {
         mavenCentral()

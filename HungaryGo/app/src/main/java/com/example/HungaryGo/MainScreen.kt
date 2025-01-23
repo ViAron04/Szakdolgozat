@@ -84,7 +84,11 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     //a jelenleg kiválasztott pálya helyszínei
     val currentLocationPackList: MutableMap<String?, MarkerOptions> = mutableMapOf()
 
+    var locationPackDataList: MutableList<LocationPackData> = mutableListOf()
+
     var follows: Boolean = false
+
+    //var locationPackDescriptions : MutableMap<String, String> = mutableMapOf();
 
     private lateinit var drawerLayout: DrawerLayout
 
@@ -170,7 +174,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                             distance
                         )
 
-                        if (distance[0] < 20 && locationName != currentNearbyLocation) {
+                        if (distance[0] < 30 && locationName != currentNearbyLocation) {
 
                             showNearInfoWindow(locationName)
                             //Toast.makeText(applicationContext, "Közel vagy ${locationName}-hoz", Toast.LENGTH_LONG).show()
@@ -248,9 +252,19 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     for (buildingSnapshot1 in snapshot.children) { //Pl. Pannon Egyetem, Vasszécseny kör
                         val locationPack = buildingSnapshot1
 
+                        val locationPackData = LocationPackData()
+
+                        locationPackData.name = locationPack.key.toString()
+
                         var currentList: MutableList<String?> = mutableListOf()
 
                         for (buildingSnapshot in locationPack.children) {
+                            if(buildingSnapshot.key == "rating") locationPackData.rating = buildingSnapshot.value.toString().toInt()
+                            else if (buildingSnapshot.key == "description") locationPackData.description = buildingSnapshot.value.toString()
+                            else
+                            {
+                                locationPackData.locations?.put(buildingSnapshot.key.toString(), null)
+                            }
 
                             if (buildingSnapshot.key != "rating" && buildingSnapshot.key != "description") {
                                 val buildingName =
@@ -286,7 +300,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                                 }
                             }
                         }
-
+                        locationPackDataList?.add(locationPackData);
                         locationPackList[locationPack.key] = currentList;
                         mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackList))
                     }
@@ -310,29 +324,17 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                             this@MainScreen,
                             "Ennél a markernél történt kattintás: ${marker.title}", Toast.LENGTH_SHORT).show()
 
-
-
-                        var locationPackDisplay: TextView? = findViewById(R.id.levelDisplay)
-
                         //megkeresi a location_packet
-                        for ((locationPack1, location) in locationPackList) {
-                            if (location.contains(marker.title)) {
-                        //        locationPackDisplay?.setText(locationPack1)
-                                currentLocationPack = locationPack1
-                                break
+                        for (locationPack in locationPackDataList) {
+                            if(locationPack.locations.containsKey(marker.title.toString()))
+                            {
+                                currentLocationPack = locationPack.name
+                                val loaded: Bitmap = BitmapStore.loadedBitmaps[currentLocationPack]!!
+                                showLPDialog(loaded, locationPack.description, locationPack.locations.count())
                             }
                         }
-
-                        val loaded: Bitmap = BitmapStore.loadedBitmaps[currentLocationPack]!!
-                        showLPDialog(loaded, "random szöveg")
-
                         //fejlécre írás
-                        supportActionBar?.title = currentLocationPack
 
-                        currentLocationPackList.clear()
-
-                        val nonNullableCurrentLocationPack: String = currentLocationPack!!
-                        getLocationData(nonNullableCurrentLocationPack)
                     }
                 }
             }
@@ -633,21 +635,36 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    fun showLPDialog(picture: Bitmap, description: String) {
+    fun showLPDialog(picture: Bitmap, description: String, locationCount: Int) {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.location_pack_dialog)
         dialog.setCancelable(true)
         val lpImage = dialog.findViewById<ImageView>(R.id.lpImage)
         val lpDescription = dialog.findViewById<TextView>(R.id.lpDescription)
+        val continueButton = dialog.findViewById<Button>(R.id.continueButton)
+        val lpLocationCount = dialog.findViewById<TextView>(R.id.lpLocationCount)
 
+        continueButton.setOnClickListener()
+        {
+            supportActionBar?.title = currentLocationPack
+            currentLocationPackList.clear()
+            val nonNullableCurrentLocationPack: String = currentLocationPack!!
+            getLocationData(nonNullableCurrentLocationPack)
+            dialog.dismiss()
+        }
         lpImage.setImageBitmap(picture)
         lpDescription.text = description
-
+        lpLocationCount.text = "Helyszínek száma: $locationCount"
         dialog.show()
+
     }
 
     fun markerReload(view: View) {
         getLocationPacks()
+    }
+
+    fun closeInfoWindow(view: View) {
+
     }
 
 }
