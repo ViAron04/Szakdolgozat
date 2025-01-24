@@ -9,7 +9,9 @@ data class LocationPackData(
 
 data class LocationDescription (
     var isQuestion: Boolean = false,
-    var description: String = "",
+    var description: String? = null,
     var question: String? = null,
-    var solution: String? = null
+    var solution: String? = null,
+    var latitude: Double? = null,
+    var longitude: Double? = null
 )

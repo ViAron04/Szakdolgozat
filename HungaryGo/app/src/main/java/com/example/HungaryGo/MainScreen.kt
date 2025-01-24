@@ -138,15 +138,12 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 super.onLocationResult(locationResult)
                 val location = locationResult.lastLocation //kiszűri a legutóbbi pozíciót
 
-                //getLocationPacks() //Firebase-ben tárolt helyeket hívja le és jeleníti meg
-
                 if (location != null) {
                     currentMarker?.remove()
 
                     currentLocation = location
                     val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
                     var icon = BitmapDescriptorFactory.fromResource(R.drawable.usericondemo)
-
 
                     currentMarker = mGoogleMap?.addMarker(
                         MarkerOptions().position(latLng).title("szerenysegem").icon(icon)
@@ -252,6 +249,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     for (buildingSnapshot1 in snapshot.children) { //Pl. Pannon Egyetem, Vasszécseny kör
                         val locationPack = buildingSnapshot1
 
+
                         val locationPackData = LocationPackData()
 
                         locationPackData.name = locationPack.key.toString()
@@ -263,7 +261,11 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                             else if (buildingSnapshot.key == "description") locationPackData.description = buildingSnapshot.value.toString()
                             else
                             {
-                                locationPackData.locations?.put(buildingSnapshot.key.toString(), null)
+                                val buildingMap = buildingSnapshot.value as Map<String, Any>
+                                val latitude = buildingMap["latitude"] as Double
+                                val longitude = buildingMap["longitude"] as Double
+                                locationPackData.locations[buildingSnapshot.key.toString()]?.latitude = latitude
+                                locationPackData.locations[buildingSnapshot.key.toString()]?.longitude = longitude
                             }
 
                             if (buildingSnapshot.key != "rating" && buildingSnapshot.key != "description") {
