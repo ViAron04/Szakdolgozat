@@ -70,7 +70,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     val db = FirebaseDatabase.getInstance()
 
     //Markerek elhelyezése
-    public val markerLocations: MutableMap<String?, MarkerOptions> = mutableMapOf()
+    //public val markerLocations: MutableMap<String?, MarkerOptions> = mutableMapOf()
 
     lateinit var toggle: ActionBarDrawerToggle
 
@@ -79,7 +79,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     private var satelliteOn: Boolean = false
 
     //pályák és a bennük található helyek listája (currentLocationPack megtalálásához)
-    val locationPackList: MutableMap<String?, MutableList<String?>> = mutableMapOf()
+    //val locationPackList: MutableMap<String?, MutableList<String?>> = mutableMapOf()
 
     //a jelenleg kiválasztott pálya helyszínei
     val currentLocationPackList: MutableMap<String?, MarkerOptions> = mutableMapOf()
@@ -246,65 +246,39 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
                 if (snapshot.exists()) { //létezik-e az adat
 
-                    for (buildingSnapshot1 in snapshot.children) { //Pl. Pannon Egyetem, Vasszécseny kör
-                        val locationPack = buildingSnapshot1
-
+                    for (buildingSnapshotLP in snapshot.children) { //Pl. Pannon Egyetem, Vasszécseny kör
 
                         val locationPackData = LocationPackData()
 
-                        locationPackData.name = locationPack.key.toString()
+                        locationPackData.name = buildingSnapshotLP.key.toString()
 
-                        var currentList: MutableList<String?> = mutableListOf()
-
-                        for (buildingSnapshot in locationPack.children) {
-                            if(buildingSnapshot.key == "rating") locationPackData.rating = buildingSnapshot.value.toString().toInt()
-                            else if (buildingSnapshot.key == "description") locationPackData.description = buildingSnapshot.value.toString()
+                        for (buildingSnapshot in buildingSnapshotLP.children) {
+                            if(buildingSnapshot.key == "rating")
+                            {
+                                locationPackData.rating = buildingSnapshot.value.toString().toInt()
+                            }
+                            else if(buildingSnapshot.key == "description")
+                            {
+                                 locationPackData.description = buildingSnapshot . value . toString ()
+                            }
                             else
                             {
                                 val buildingMap = buildingSnapshot.value as Map<String, Any>
                                 val latitude = buildingMap["latitude"] as Double
                                 val longitude = buildingMap["longitude"] as Double
-                                locationPackData.locations[buildingSnapshot.key.toString()]?.latitude = latitude
-                                locationPackData.locations[buildingSnapshot.key.toString()]?.longitude = longitude
-                            }
+                                var name = buildingSnapshot.key.toString()
 
-                            if (buildingSnapshot.key != "rating" && buildingSnapshot.key != "description") {
-                                val buildingName =
-                                    buildingSnapshot.key  //Pl. "A épület", "I épület"
+                                locationPackData.locations[name] = LocationDescription(latitude=latitude, longitude=longitude)
 
-
-                                if (!markerLocations.containsKey(buildingName)) {
-
-                                    currentList.add(buildingName)
-                                    Log.d("BuildId", "name: " + buildingName)
-
-
-                                    val buildingMap = buildingSnapshot.value as Map<String, Any>
-                                    val buildId = buildingMap["Id"] as String
-                                    val latitude = buildingMap["latitude"] as Double
-                                    val longitude = buildingMap["longitude"] as Double
-
-                                    currentList.add(buildId)
-
-                                    Log.d("BuildId", buildId)
-
-                                    // Lehelyezi/ hozzáadja a Map-hez a markereket
-                                    val actualMarker: MarkerOptions = MarkerOptions()
-                                        .position(LatLng(latitude, longitude))
-                                        .title(buildingName)
-                                        .draggable(false)
-
-                                    markerLocations[buildingName] = actualMarker
-
-                                    mGoogleMap?.addMarker(actualMarker)
-
-
-                                }
+                                val actualMarker: MarkerOptions = MarkerOptions()
+                                    .position(LatLng(latitude, longitude))
+                                    .title(name)
+                                    .draggable(false)
+                                mGoogleMap?.addMarker(actualMarker)
                             }
                         }
-                        locationPackDataList?.add(locationPackData);
-                        locationPackList[locationPack.key] = currentList;
-                        mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackList))
+                        locationPackDataList.add(locationPackData)
+                        mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList))
                     }
 
                 isLoaded=true;

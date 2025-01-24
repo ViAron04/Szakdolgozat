@@ -16,11 +16,12 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 import com.google.firebase.storage.FirebaseStorage
 import com.bumptech.glide.request.RequestOptions
+import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.MainScreen
 import java.text.Normalizer
 
 
-class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksList: MutableMap<String?, MutableList<String?>>) : GoogleMap.InfoWindowAdapter {
+class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksList: MutableList<LocationPackData>) : GoogleMap.InfoWindowAdapter {
 
     private val loadedImages = mutableMapOf<String, Boolean>()
     val mContext = context
@@ -37,10 +38,10 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
         val startButton = view.findViewById<Button>(R.id.startButton)
         var locationPackName: String? = null
 
-        for ((locationPack, loacation) in locationPacksList)
+        for (locationPack in locationPacksList)
         {
-            if (loacation.contains(marker.title))
-                locationPackName=locationPack
+            if (locationPack.locations.containsKey(marker.title))
+                locationPackName=locationPack.name
         }
 
 
