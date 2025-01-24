@@ -88,7 +88,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
     var follows: Boolean = false
 
-    //var locationPackDescriptions : MutableMap<String, String> = mutableMapOf();
+    val markers = mutableListOf<Marker?>()
 
     private lateinit var drawerLayout: DrawerLayout
 
@@ -172,11 +172,15 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                         )
 
                         if (distance[0] < 30 && locationName != currentNearbyLocation) {
-
-                            showNearInfoWindow(locationName)
-                            //Toast.makeText(applicationContext, "Közel vagy ${locationName}-hoz", Toast.LENGTH_LONG).show()
+                            for (marker in markers)
+                            {
+                                if (marker?.position?.latitude == latLng.latitude && marker?.position?.longitude == latLng.longitude)
+                                {
+                                    marker.showInfoWindow()
+                                }
+                            }
+                            //showNearInfoWindow(locationName)
                             currentNearbyLocation = locationName
-
                         }
                     }
 
@@ -270,17 +274,18 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
                                 locationPackData.locations[name] = LocationDescription(latitude=latitude, longitude=longitude)
 
-                                val actualMarker: MarkerOptions = MarkerOptions()
-                                    .position(LatLng(latitude, longitude))
-                                    .title(name)
-                                    .draggable(false)
-                                mGoogleMap?.addMarker(actualMarker)
+                                val marker = mGoogleMap?.addMarker(
+                                    MarkerOptions()
+                                        .position(LatLng(latitude, longitude))
+                                        .title(name)
+                                        .draggable(false)
+                                )
+                                markers.add(marker)
                             }
                         }
                         locationPackDataList.add(locationPackData)
-                        mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList))
                     }
-
+                    mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
                 isLoaded=true;
                 } else {
                     println("Nem találtam helyszíneket az adatbázisban")
@@ -305,6 +310,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                             if(locationPack.locations.containsKey(marker.title.toString()))
                             {
                                 currentLocationPack = locationPack.name
+                                mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
                                 val loaded: Bitmap = BitmapStore.loadedBitmaps[currentLocationPack]!!
                                 showLPDialog(loaded, locationPack.description, locationPack.locations.count())
                             }
@@ -605,6 +611,9 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     .setPositiveButton("OK") { dialog, _ ->
                         dialog.dismiss()
                     }
+                currentLocationPack = null
+                supportActionBar?.title = "Üdv, ${auth.currentUser?.displayName}"
+                mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
                 val alertDialog = dialogBuilder.create()
                 alertDialog.show()
             }

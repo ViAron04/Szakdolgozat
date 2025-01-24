@@ -21,29 +21,29 @@ import com.example.HungaryGo.MainScreen
 import java.text.Normalizer
 
 
-class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksList: MutableList<LocationPackData>) : GoogleMap.InfoWindowAdapter {
-
-    private val loadedImages = mutableMapOf<String, Boolean>()
-    val mContext = context
-    var mWindow = (context as Activity).layoutInflater.inflate(R.layout.infowindow, null)
+class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksList: MutableList<LocationPackData>, val currentLocation: String?) : GoogleMap.InfoWindowAdapter {
 
     //eltárolja a már eltöltött képeket
+    private val loadedImages = mutableMapOf<String, Boolean>()
+    val mContext = context
+    var infowindow = R.layout.infowindow
 
+    init {
+        if (currentLocation != null) {
+            infowindow = R.layout.infowindowlocation
+        }
+    }
+    var mWindow = (context as Activity).layoutInflater.inflate(infowindow, null)
 
     private fun rendowWindowText(marker: Marker, view: View){
-        Log.d("Szia", "Lefutottam megint");
-        val locationPackImg: ImageView = view.findViewById(R.id.location_img)
-        val locationPack = view.findViewById<TextView>(R.id.location_pack)
-        val location = view.findViewById<TextView>(R.id.location)
-        val startButton = view.findViewById<Button>(R.id.startButton)
-        var locationPackName: String? = null
 
+        var locationPackName: String? = null
         for (locationPack in locationPacksList)
         {
             if (locationPack.locations.containsKey(marker.title))
                 locationPackName=locationPack.name
         }
-
+        val locationPackImg: ImageView = view.findViewById(R.id.location_img)
 
         //kép megjelenítése
         fun removeAccents(input: String?): String {
@@ -76,8 +76,22 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
         }
 
 
-        locationPack.text = locationPackName
-        location.text = marker.title
+
+        if(infowindow == R.layout.infowindow)
+        {
+            val locationPack = view.findViewById<TextView>(R.id.location_pack)
+            val location = view.findViewById<TextView>(R.id.location)
+            locationPack.text = locationPackName
+            location.text =marker.title
+        }
+        else
+        {
+            val locationPack = view.findViewById<TextView>(R.id.location_pack)
+            val location = view.findViewById<TextView>(R.id.location)
+            locationPack.text = "A következő helyszínre értél: "
+            location.text =marker.title
+        }
+
     }
 
     override fun getInfoContents(marker: Marker): View {
