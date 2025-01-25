@@ -43,7 +43,7 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
             if (locationPack.locations.containsKey(marker.title))
                 locationPackName=locationPack.name
         }
-        val locationPackImg: ImageView = view.findViewById(R.id.location_img)
+
 
         //kép megjelenítése
         fun removeAccents(input: String?): String {
@@ -53,36 +53,39 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
 
         val imgName = removeAccents(locationPackName?.lowercase()?.replace(' ','_'))
 
-        if(MainScreen.BitmapStore.loadedBitmaps.containsKey(locationPackName))
-        {
-            locationPackImg.setImageBitmap(MainScreen.BitmapStore.loadedBitmaps[locationPackName])
-        }else {
 
-            val storage = FirebaseStorage.getInstance()
-            val storageImgReference =
-                storage.getReferenceFromUrl("gs://kotlin-gyak-firebase.appspot.com/location_packs_images/$imgName.jpg")
-
-            val maxDownloadableSize: Long = 500 * 500
-            storageImgReference.getBytes(maxDownloadableSize).addOnSuccessListener { bytes ->
-                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                MainScreen.BitmapStore.loadedBitmaps[locationPackName] = bitmap
-
-                //locationPackImg.setImageBitmap(bitmap)
-                marker.showInfoWindow()
-            }
-                .addOnFailureListener { exception ->
-                    Log.d("Firebase", "Kép letöltése sikertelen", exception)
-                }
-        }
 
 
 
         if(infowindow == R.layout.infowindow)
         {
+            val locationPackImg: ImageView = view.findViewById(R.id.location_img)
             val locationPack = view.findViewById<TextView>(R.id.location_pack)
             val location = view.findViewById<TextView>(R.id.location)
             locationPack.text = locationPackName
             location.text =marker.title
+
+            if(MainScreen.BitmapStore.loadedBitmaps.containsKey(locationPackName))
+            {
+                locationPackImg.setImageBitmap(MainScreen.BitmapStore.loadedBitmaps[locationPackName])
+            }else {
+
+                val storage = FirebaseStorage.getInstance()
+                val storageImgReference =
+                    storage.getReferenceFromUrl("gs://kotlin-gyak-firebase.appspot.com/location_packs_images/$imgName.jpg")
+
+                val maxDownloadableSize: Long = 500 * 500
+                storageImgReference.getBytes(maxDownloadableSize).addOnSuccessListener { bytes ->
+                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    MainScreen.BitmapStore.loadedBitmaps[locationPackName] = bitmap
+
+                    //locationPackImg.setImageBitmap(bitmap)
+                    marker.showInfoWindow()
+                }
+                    .addOnFailureListener { exception ->
+                        Log.d("Firebase", "Kép letöltése sikertelen", exception)
+                    }
+            }
         }
         else
         {
