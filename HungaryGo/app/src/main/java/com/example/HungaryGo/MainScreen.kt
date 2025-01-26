@@ -544,42 +544,24 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
     //ellenőrzi, megvan-e az összes helyszín a pályából
     fun checkLocations() {
-        val dbfirestore = FirebaseFirestore.getInstance()
-        val currentUserEmail = auth.currentUser?.email.toString()
-        val currentLocatipnPackNonNullable1 = currentLocationPack.toString()
-        val documentRef =
-            dbfirestore.collection("userpoints").document(currentUserEmail).collection("inprogress")
-                .document(currentLocatipnPackNonNullable1)
+            checkLocationPackCompletion(currentLocationPack.toString()) { allOne ->
+                //dialog megjelenítése
+                if (allOne) {
+                    Log.d("FirestoreCheck", "All values are 1.")
 
+                    val dialogBuilder = AlertDialog.Builder(this@MainScreen)
+                    dialogBuilder.setTitle("Megcsináltad!")
+                        .setMessage("Gratulálok, teljesítetted a $currentLocationPack pályát!")
+                        .setCancelable(true)
+                        .setPositiveButton("OK") { dialog, _ ->
+                            dialog.dismiss()
+                        }
 
-
-        documentRef.get().addOnSuccessListener { docuRef ->
-            val data = docuRef.data
-
-            //a document összes eleme 1?
-            val allOne = data?.all { (key, value) ->
-                val isOne = value == 1L || value == 1.0
-                Log.d("FirestoreCheck", "Field: $key, Value: $value, IsOne: $isOne")
-                isOne
-            } ?: false
-
-            //dialog megjelenítése
-            if (allOne) {
-                Log.d("FirestoreCheck", "All values are 1.")
-
-                val dialogBuilder = AlertDialog.Builder(this@MainScreen)
-                dialogBuilder.setTitle("Megcsináltad!")
-                    .setMessage("Gratulálok, teljesítetted a $currentLocationPack pályát!")
-                    .setCancelable(true)
-                    .setPositiveButton("OK") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-
-                currentLocationPackToNull(findViewById<ImageButton>(R.id.xButton))
-                val alertDialog = dialogBuilder.create()
-                alertDialog.show()
+                    currentLocationPackToNull(findViewById<ImageButton>(R.id.xButton))
+                    val alertDialog = dialogBuilder.create()
+                    alertDialog.show()
+                }
             }
-        }
     }
 
     fun showLPDialog(currentLocationPackData: LocationPackData, marker: Marker) {
@@ -715,5 +697,27 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 marker?.isVisible = false
             }
         }
+    }
+
+    fun checkLocationPackCompletion(currentLocationPackParam: String, callback: (Boolean) -> Unit) {
+        val dbfirestore = FirebaseFirestore.getInstance()
+        val currentUserEmail = auth.currentUser?.email.toString()
+        val documentRef = dbfirestore.collection("userpoints")
+            .document(currentUserEmail)
+            .collection("inprogress")
+            .document(currentLocationPackParam)
+
+        documentRef.get()
+            .addOnSuccessListener { docSnapshot ->
+                val data = docSnapshot.data
+                val allOne = data?.all { (_, value) ->
+                    value == 1L || value == 1.0
+                } ?: false
+
+                callback(allOne)
+            }
+            .addOnFailureListener {
+                callback(false)
+            }
     }
 }
