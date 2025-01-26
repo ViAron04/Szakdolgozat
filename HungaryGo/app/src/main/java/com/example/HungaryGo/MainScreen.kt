@@ -691,6 +691,11 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         val xButton = findViewById<ImageButton>(R.id.xButton)
         xButton.visibility = View.INVISIBLE
         mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
+
+        for (marker in markers)
+        {
+            marker?.isVisible = true
+        }
     }
 
     fun currentLocationPackSet(locationName: String)
@@ -701,5 +706,14 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         val xButton = findViewById<ImageButton>(R.id.xButton)
         xButton.visibility = View.VISIBLE
         currentLocationPackList.clear()
+
+        val matchingItem = locationPackDataList.find { it.name == currentLocationPack }
+        for (marker in markers)
+        {
+            if (!matchingItem?.locations!!.containsKey(marker?.title))
+            {
+                marker?.isVisible = false
+            }
+        }
     }
 }
