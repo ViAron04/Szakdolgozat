@@ -16,9 +16,11 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -26,6 +28,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.marginTop
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -173,8 +176,8 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                             distance
                         )
 
-                        if (distance[0] < 30 && locationName != currentNearbyLocation) {
-                            /*
+                        if (distance[0] < 30 && locationName != currentNearbyLocation && currentLocationPack != null) {
+
                             for (mark in markers)
                             {
                                 if (mark?.position?.latitude == marker.position.latitude && mark.position.longitude == marker.position.longitude)
@@ -182,16 +185,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                                     mark.showInfoWindow()
                                 }
                             }
-                            */
-                            for( lpData in locationPackDataList)
-                            {
-                                if(lpData.name==currentLocationPack)
-                                {
-                                    val locationData = lpData.locations[locationName]!!
-                                    showLDialog(null, locationData, locationName!!)
-                                    break
-                                }
-                            }
+
                             //showNearWindow(locationName)
                             currentNearbyLocation = locationName
                         }
@@ -203,43 +197,6 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                         mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLng(newLatLng)) //a kamera ezáltal követi a felhasználót
                     }
                 }
-            }
-
-            //szövegablak ha közel érek
-            private fun showNearWindow(locationName: String?) {
-                val dialogBuilder =
-                    AlertDialog.Builder(this@MainScreen)
-
-                dialogBuilder.setTitle("Közel vagy!")
-                    .setMessage("A(z) $locationName-hez értél!")
-                    .setCancelable(true)
-                    .setPositiveButton("OK") { dialog, _ ->
-                        val dbfirestore = FirebaseFirestore.getInstance()
-                        val currentUserEmail = auth.currentUser?.email.toString()
-                        val collectionRef =
-                            dbfirestore.collection("userpoints").document(currentUserEmail)
-                                .collection("inprogress")
-
-                        val locationPoint = hashMapOf(
-                            locationName to 1
-                        )
-                        var currentLocationPackNonNullable = currentLocationPack.toString()
-                        collectionRef.document(currentLocationPackNonNullable)
-                            .set(locationPoint, SetOptions.merge())
-                        Toast.makeText(
-                            applicationContext,
-                            "Helyszín megcsinálva!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                        checkLocations()
-                        dialog.dismiss()
-
-                    }
-
-                val alertDialog = dialogBuilder.create()
-                alertDialog.show() // Show the dialog
-
             }
         }
     }
@@ -307,28 +264,29 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
                 //infowindowra kattintás
                 mGoogleMap?.setOnInfoWindowClickListener { marker ->
-                        /*Toast.makeText(
-                            this@MainScreen,
-                            "Ennél a markernél történt kattintás: ${marker.title}", Toast.LENGTH_SHORT).show()*/
-
-                        //megkeresi a location_packet
-                        for (locationPack in locationPackDataList) {
-                            if(locationPack.locations.containsKey(marker.title.toString()))
-                            {
-                                currentLocationPack = locationPack.name
-                                mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
-                                val loaded: Bitmap = BitmapStore.loadedBitmaps[currentLocationPack]!!
-
-
-                                    showLPDialog(
-                                        loaded,
-                                        locationPack.description,
-                                        locationPack.locations.count()
-                                    )
-
-
-                            }
+                    var currentLocationPackData: LocationPackData = LocationPackData()
+                    for (locationPack in locationPackDataList) {
+                        if(locationPack.locations.containsKey(marker.title.toString()))
+                        {
+                            currentLocationPackData = locationPack
                         }
+                    }
+
+                    if(currentLocationPack == null)
+                        {
+
+                            currentLocationPack = currentLocationPackData.name
+                            mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
+                            val loaded: Bitmap = BitmapStore.loadedBitmaps[currentLocationPack]!!
+                            showLPDialog(
+                                loaded,
+                                currentLocationPackData.description,
+                                currentLocationPackData.locations.count()
+                            )
+                        }
+                    else if (currentLocationPackData.locations.containsKey(marker.title)) {
+                        showLDialog(null,currentLocationPackData.locations[marker.title]!!, marker.title!!)
+                    }
                 }
             }
 
@@ -626,6 +584,8 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     }
                 currentLocationPack = null
                 supportActionBar?.title = "Üdv, ${auth.currentUser?.displayName}"
+                val xButton = findViewById<ImageButton>(R.id.xButton)
+                xButton.visibility = View.INVISIBLE
                 mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
                 val alertDialog = dialogBuilder.create()
                 alertDialog.show()
@@ -645,10 +605,17 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         continueButton.setOnClickListener()
         {
             supportActionBar?.title = currentLocationPack
+            val xButton = findViewById<ImageButton>(R.id.xButton)
+            xButton.visibility = View.VISIBLE
+
             currentLocationPackList.clear()
             val nonNullableCurrentLocationPack: String = currentLocationPack!!
             getLocationData(nonNullableCurrentLocationPack)
             dialog.dismiss()
+            //Átmeneti!
+            for (marker in markers) {
+                marker?.hideInfoWindow()
+            }
         }
         lpImage.setImageBitmap(picture)
         lpDescription.text = description
@@ -678,6 +645,9 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
         if(locationDescription.isQuestion)
         {
+            val params = lQuestion.layoutParams as ViewGroup.MarginLayoutParams
+            params.topMargin = 20
+            lQuestion.layoutParams = params
             lQuestion.text = locationDescription.question
         }
 
@@ -703,6 +673,8 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             ).show()
 
             checkLocations()
+            dialog.dismiss()
+            mGoogleMap?.setInfoWindowAdapter(null)
         }
         dialog.show()
     }
@@ -713,6 +685,15 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
     fun closeInfoWindow(view: View) {
 
+    }
+
+    // a currentLocationPack-et Null-ra állítja
+    fun currentLocationPackToNull(view: View) {
+        currentLocationPack = null
+        supportActionBar?.title = "Üdv, ${auth.currentUser?.displayName}"
+        val xButton = findViewById<ImageButton>(R.id.xButton)
+        xButton.visibility = View.INVISIBLE
+        mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
     }
 
 }
