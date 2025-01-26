@@ -274,18 +274,11 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
                     if(currentLocationPack == null)
                         {
-
-                            currentLocationPack = currentLocationPackData.name
-                            mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
-                            val loaded: Bitmap = BitmapStore.loadedBitmaps[currentLocationPack]!!
-                            showLPDialog(
-                                loaded,
-                                currentLocationPackData.description,
-                                currentLocationPackData.locations.count()
-                            )
+                            showLPDialog(currentLocationPackData, marker)
                         }
-                    else if (currentLocationPackData.locations.containsKey(marker.title)) {
-                        showLDialog(null,currentLocationPackData.locations[marker.title]!!, marker.title!!)
+                    else if (currentLocationPackData.locations.containsKey(marker.title))
+                    {
+                        showLDialog(currentLocationPackData, marker)
                     }
                 }
             }
@@ -593,7 +586,10 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    fun showLPDialog(picture: Bitmap, description: String, locationCount: Int) {
+    fun showLPDialog(currentLocationPackData: LocationPackData, marker: Marker) {
+        currentLocationPack = currentLocationPackData.name
+        mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
+        val picture: Bitmap = BitmapStore.loadedBitmaps[currentLocationPack]!!
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.location_pack_dialog)
         dialog.setCancelable(true)
@@ -612,19 +608,16 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             val nonNullableCurrentLocationPack: String = currentLocationPack!!
             getLocationData(nonNullableCurrentLocationPack)
             dialog.dismiss()
-            //Átmeneti!
-            for (marker in markers) {
-                marker?.hideInfoWindow()
-            }
+            marker.hideInfoWindow()
         }
         lpImage.setImageBitmap(picture)
-        lpDescription.text = description
-        lpLocationCount.text = "Helyszínek száma: $locationCount"
+        lpDescription.text = currentLocationPackData.description
+        lpLocationCount.text = "Helyszínek száma: ${currentLocationPackData.locations.count()}"
         dialog.show()
 
     }
 
-    fun showLDialog(picture: Bitmap?, locationDescription: LocationDescription, locationName: String)
+    fun showLDialog(currentLocationPackData: LocationPackData, marker: Marker)
     {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.location_dialog)
@@ -636,19 +629,18 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         val lQuestionAnswer = dialog.findViewById<EditText>(R.id.lQuestionAnswer)
         val continueButton = dialog.findViewById<Button>(R.id.continueButton)
 
-
-        lName.text = locationName
-        if(locationDescription.description != null)
+        lName.text = marker.title
+        if(currentLocationPackData.locations[marker.title]?.description != null)
         {
-            lDescription.text = locationDescription.description
+            lDescription.text = currentLocationPackData.locations[marker.title]?.description
         }
 
-        if(locationDescription.isQuestion)
+        if(currentLocationPackData.locations[marker.title]!!.isQuestion)
         {
             val params = lQuestion.layoutParams as ViewGroup.MarginLayoutParams
             params.topMargin = 20
             lQuestion.layoutParams = params
-            lQuestion.text = locationDescription.question
+            lQuestion.text = currentLocationPackData.locations[marker.title]!!.question
         }
 
 
@@ -661,7 +653,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     .collection("inprogress")
 
             val locationPoint = hashMapOf(
-                locationName to 1
+                marker.title to 1
             )
             var currentLocationPackNonNullable = currentLocationPack.toString()
             collectionRef.document(currentLocationPackNonNullable)
@@ -674,7 +666,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
             checkLocations()
             dialog.dismiss()
-            mGoogleMap?.setInfoWindowAdapter(null)
+            marker.hideInfoWindow()
         }
         dialog.show()
     }
