@@ -176,7 +176,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                             distance
                         )
 
-                        if (distance[0] < 30 && locationName != currentNearbyLocation && currentLocationPack != null) {
+                        if (distance[0] < 30 && locationName != currentNearbyLocation) {
 
                             for (mark in markers)
                             {
@@ -242,8 +242,15 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                                 val longitude = buildingMap["longitude"] as Double
                                 val description = buildingMap["Description"] as String?
                                 val name = buildingSnapshot.key.toString()
+                                var question = null as String?
+                                var answer = null as String?
+                                if(buildingMap.containsKey("Question"))
+                                {
+                                    question = buildingMap["Question"] as String?
+                                    answer = buildingMap["Answer"] as String?
+                                }
 
-                                locationPackData.locations[name] = LocationDescription(latitude=latitude, longitude=longitude, description = description)
+                                locationPackData.locations[name] = LocationDescription(latitude=latitude, longitude=longitude, description = description, question = question, answer = answer)
 
                                 val marker = mGoogleMap?.addMarker(
                                     MarkerOptions()
@@ -348,14 +355,6 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
 
     }
-
-
-
-    /*
-    //az infowindow-ban start gombra kattintás
-    fun startButtonClick(marker: Marker) {
-        Toast.makeText(this, "Button clicked for marker: ${marker.title}", Toast.LENGTH_SHORT).show()
-    }*/
 
 
     //meghatározza  a jelenlegi pozíciót
@@ -575,11 +574,8 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     .setPositiveButton("OK") { dialog, _ ->
                         dialog.dismiss()
                     }
-                currentLocationPack = null
-                supportActionBar?.title = "Üdv, ${auth.currentUser?.displayName}"
-                val xButton = findViewById<ImageButton>(R.id.xButton)
-                xButton.visibility = View.INVISIBLE
-                mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
+
+                currentLocationPackToNull(findViewById<ImageButton>(R.id.xButton))
                 val alertDialog = dialogBuilder.create()
                 alertDialog.show()
             }
@@ -589,7 +585,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     fun showLPDialog(currentLocationPackData: LocationPackData, marker: Marker) {
         currentLocationPack = currentLocationPackData.name
         mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
-        val picture: Bitmap = BitmapStore.loadedBitmaps[currentLocationPack]!!
+        val picture: Bitmap = BitmapStore.loadedBitmaps[currentLocationPackData.name]!!
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.location_pack_dialog)
         dialog.setCancelable(true)
@@ -600,11 +596,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
         continueButton.setOnClickListener()
         {
-            supportActionBar?.title = currentLocationPack
-            val xButton = findViewById<ImageButton>(R.id.xButton)
-            xButton.visibility = View.VISIBLE
-
-            currentLocationPackList.clear()
+            currentLocationPackSet(currentLocationPackData.name)
             val nonNullableCurrentLocationPack: String = currentLocationPack!!
             getLocationData(nonNullableCurrentLocationPack)
             dialog.dismiss()
@@ -628,45 +620,57 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         val lQuestion = dialog.findViewById<TextView>(R.id.lQuestion)
         val lQuestionAnswer = dialog.findViewById<EditText>(R.id.lQuestionAnswer)
         val continueButton = dialog.findViewById<Button>(R.id.continueButton)
+        val currentLocationData = currentLocationPackData.locations[marker.title]
 
         lName.text = marker.title
-        if(currentLocationPackData.locations[marker.title]?.description != null)
+        if(currentLocationData?.description != null)
         {
-            lDescription.text = currentLocationPackData.locations[marker.title]?.description
+            lDescription.text = currentLocationData.description
         }
 
-        if(currentLocationPackData.locations[marker.title]!!.isQuestion)
+        if(currentLocationData?.question != null)
         {
             val params = lQuestion.layoutParams as ViewGroup.MarginLayoutParams
             params.topMargin = 20
             lQuestion.layoutParams = params
-            lQuestion.text = currentLocationPackData.locations[marker.title]!!.question
+            lQuestion.text = currentLocationData.question
+            lQuestionAnswer.visibility = View.VISIBLE
         }
 
 
 
         continueButton.setOnClickListener {
-            val dbfirestore = FirebaseFirestore.getInstance()
-            val currentUserEmail = auth.currentUser?.email.toString()
-            val collectionRef =
-                dbfirestore.collection("userpoints").document(currentUserEmail)
-                    .collection("inprogress")
+            if(lQuestionAnswer.text.toString() == currentLocationData?.answer || currentLocationData?.question == null) {
+                val dbfirestore = FirebaseFirestore.getInstance()
+                val currentUserEmail = auth.currentUser?.email.toString()
+                val collectionRef =
+                    dbfirestore.collection("userpoints").document(currentUserEmail)
+                        .collection("inprogress")
 
-            val locationPoint = hashMapOf(
-                marker.title to 1
-            )
-            var currentLocationPackNonNullable = currentLocationPack.toString()
-            collectionRef.document(currentLocationPackNonNullable)
-                .set(locationPoint, SetOptions.merge())
-            Toast.makeText(
-                applicationContext,
-                "Helyszín megcsinálva!",
-                Toast.LENGTH_SHORT
-            ).show()
+                val locationPoint = hashMapOf(
+                    marker.title to 1
+                )
+                var currentLocationPackNonNullable = currentLocationPack.toString()
+                collectionRef.document(currentLocationPackNonNullable)
+                    .set(locationPoint, SetOptions.merge())
+                Toast.makeText(
+                    applicationContext,
+                    "Helyszín megcsinálva!",
+                    Toast.LENGTH_SHORT
+                ).show()
 
-            checkLocations()
-            dialog.dismiss()
-            marker.hideInfoWindow()
+                checkLocations()
+                dialog.dismiss()
+                marker.hideInfoWindow()
+            }
+            else
+            {
+                Toast.makeText(
+                    applicationContext,
+                    "Rossz válasz, a helyszín teljesítéséhez próbáld újra!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
         dialog.show()
     }
@@ -682,10 +686,20 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     // a currentLocationPack-et Null-ra állítja
     fun currentLocationPackToNull(view: View) {
         currentLocationPack = null
+        currentLocationPackList.clear()
         supportActionBar?.title = "Üdv, ${auth.currentUser?.displayName}"
         val xButton = findViewById<ImageButton>(R.id.xButton)
         xButton.visibility = View.INVISIBLE
         mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
     }
 
+    fun currentLocationPackSet(locationName: String)
+    {
+        currentLocationPack = locationName
+        mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
+        supportActionBar?.title = currentLocationPack
+        val xButton = findViewById<ImageButton>(R.id.xButton)
+        xButton.visibility = View.VISIBLE
+        currentLocationPackList.clear()
+    }
 }
