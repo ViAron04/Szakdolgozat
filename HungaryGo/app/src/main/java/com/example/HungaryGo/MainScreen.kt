@@ -500,7 +500,11 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.kalandKeres -> {
-                startActivity(Intent(this@MainScreen, AdventureList::class.java))
+                //a pályák adatainak küldése
+                val intent = Intent(this@MainScreen, AdventureList::class.java)
+                intent.putExtra("locationPackList", ArrayList(locationPackDataList))
+
+                startActivity(intent)
             }
 
             R.id.ujKaland -> {
@@ -588,7 +592,6 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         lpDescription.text = currentLocationPackData.description
         lpLocationCount.text = "Helyszínek száma: ${currentLocationPackData.locations.count()}"
         dialog.show()
-
     }
 
     fun showLDialog(currentLocationPackData: LocationPackData, marker: Marker)

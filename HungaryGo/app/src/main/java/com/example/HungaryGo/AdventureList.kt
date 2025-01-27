@@ -17,9 +17,16 @@ class AdventureList : AppCompatActivity() {
         val listData: MutableList<String> = mutableListOf()
         val adapter: ArrayAdapter<String>
 
-        listData.add("Vasszécseny kör   hossz: 1 km\n legközelebbi állomása: 20 km")
-        listData.add("Veszprém kör      hossz: 200 m\n legközelebbi állomása: 40 km")
+        val intent = intent
+        val locationPackDataList = intent.getSerializableExtra("locationPackList") as? ArrayList<LocationPackData>
 
+
+        if (locationPackDataList != null) {
+            for (locationPackData in locationPackDataList)
+            {
+                listData.add("${locationPackData.name}\nHelyszínek száma: ${locationPackData.locations.count()}")
+            }
+        }
         //public val markerLocations: MutableMap<String? , MarkerOptions> = mutableMapOf()
 
 
