@@ -1,5 +1,6 @@
 package com.example.HungaryGo
 
+import com.google.android.gms.maps.model.MarkerOptions
 import java.io.Serializable
 
 data class LocationPackData(
@@ -11,9 +12,10 @@ data class LocationPackData(
 // a serializable az intentként törénő küldéshez kell
 
 data class LocationDescription (
+    var markerOptions: MarkerOptions? = null,
     var description: String? = null,
     var question: String? = null,
     var answer: String? = null,
-    var latitude: Double? = null,
-    var longitude: Double? = null
+    //var latitude: Double? = null,
+    //var longitude: Double? = null
 ) : Serializable

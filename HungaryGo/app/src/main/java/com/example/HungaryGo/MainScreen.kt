@@ -83,12 +83,6 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
     private var satelliteOn: Boolean = false
 
-    //pályák és a bennük található helyek listája (currentLocationPack megtalálásához)
-    //val locationPackList: MutableMap<String?, MutableList<String?>> = mutableMapOf()
-
-    //a jelenleg kiválasztott pálya helyszínei
-    val currentLocationPackList: MutableMap<String?, MarkerOptions> = mutableMapOf()
-
     var locationPackDataList: MutableList<LocationPackData> = mutableListOf()
 
     var follows: Boolean = false
@@ -166,31 +160,35 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                         }
                     }
 
-                    for ((locationName, marker) in currentLocationPackList) {
-                        val distance = FloatArray(1)
-                        Location.distanceBetween(
-                            marker.position.latitude,
-                            marker.position.longitude, //megnézi, mekkora a táv a markerek és a játékos között
-                            latLng.latitude,
-                            latLng.longitude,
-                            distance
-                        )
+                    //a jelenleg kiválasztott pálya helyszínei
+                    val currentLocationPackList = locationPackDataList.find { it.name == currentLocationPack }
+                    if (currentLocationPackList != null)
+                    {
+                        for (currentLocationPack in currentLocationPackList.locations) {
+                            val distance = FloatArray(1)
+                            Location.distanceBetween(
+                                currentLocationPack.value?.markerOptions?.position!!.latitude,
+                                currentLocationPack.value?.markerOptions?.position!!.longitude, //megnézi, mekkora a táv a markerek és a játékos között
+                                latLng.latitude,
+                                latLng.longitude,
+                                distance
+                            )
 
-                        if (distance[0] < 30 && locationName != currentNearbyLocation) {
+                            if (distance[0] < 30 && currentLocationPack.key != currentNearbyLocation) {
 
-                            for (mark in markers)
-                            {
-                                if (mark?.position?.latitude == marker.position.latitude && mark.position.longitude == marker.position.longitude)
-                                {
-                                    mark.showInfoWindow()
+                                for (mark in markers) {
+                                    if (mark?.position?.latitude == currentLocationPack.value?.markerOptions?.position!!.latitude
+                                        && mark.position.longitude == currentLocationPack.value?.markerOptions?.position!!.longitude
+                                    ) {
+                                        mark.showInfoWindow()
+                                    }
                                 }
-                            }
 
-                            //showNearWindow(locationName)
-                            currentNearbyLocation = locationName
+                                //showNearWindow(locationName)
+                                currentNearbyLocation = currentLocationPack.key
+                            }
                         }
                     }
-
                     val newLatLng = LatLng(location.latitude, location.longitude)
 
                     if (follows) { //a goToMe funkcióban állítható
@@ -238,8 +236,10 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                             else
                             {
                                 val buildingMap = buildingSnapshot.value as Map<String, Any>
-                                val latitude = buildingMap["latitude"] as Double
-                                val longitude = buildingMap["longitude"] as Double
+                                //val latitude = buildingMap["latitude"] as Double
+                                //val longitude = buildingMap["longitude"] as Double
+                                val markerOptions = MarkerOptions()
+                                    .position(LatLng(buildingMap["latitude"] as Double, buildingMap["longitude"] as Double))
                                 val description = buildingMap["Description"] as String?
                                 val name = buildingSnapshot.key.toString()
                                 var question = null as String?
@@ -250,11 +250,10 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                                     answer = buildingMap["Answer"] as String?
                                 }
 
-                                locationPackData.locations[name] = LocationDescription(latitude=latitude, longitude=longitude, description = description, question = question, answer = answer)
+                                locationPackData.locations[name] = LocationDescription(markerOptions, description = description, question = question, answer = answer)
 
                                 val marker = mGoogleMap?.addMarker(
-                                    MarkerOptions()
-                                        .position(LatLng(latitude, longitude))
+                                    markerOptions
                                         .title(name)
                                         .draggable(false)
                                 )
@@ -295,67 +294,6 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             }
         })
     }
-
-
-    fun getLocationData(locationPackName: String) {
-        val dbfirestore = FirebaseFirestore.getInstance()
-        val currentUserEmail = auth.currentUser?.email.toString()
-        val collectionRef =
-            dbfirestore.collection("userpoints").document(currentUserEmail).collection("inprogress")
-
-
-        val locationPacksRef = db.getReference("location packs")
-        locationPacksRef.child(locationPackName)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    collectionRef.document(locationPackName).get()
-                        .addOnSuccessListener { document ->
-                            if (document.exists()) {
-                                // A dokumentum már létezik, itt kezelheted ezt az esetet.
-                                for (locationSnapshot in snapshot.children) {
-                                    if (locationSnapshot.key != "rating" && locationSnapshot.key != "description") {
-                                        val buildingMap = locationSnapshot.value as Map<String, Any>
-                                        val latitude = buildingMap["latitude"] as Double
-                                        val longitude = buildingMap["longitude"] as Double
-
-                                        val actualMarker: MarkerOptions = MarkerOptions()
-                                            .position(LatLng(latitude, longitude))
-
-                                        currentLocationPackList[locationSnapshot.key] = actualMarker
-                                    }
-                                }
-
-                            } else {
-                                for (locationSnapshot in snapshot.children) {
-                                    if (locationSnapshot.key != "rating" && locationSnapshot.key != "description") {
-                                        val buildingMap = locationSnapshot.value as Map<String, Any>
-                                        val latitude = buildingMap["latitude"] as Double
-                                        val longitude = buildingMap["longitude"] as Double
-
-                                        val actualMarker: MarkerOptions = MarkerOptions()
-                                            .position(LatLng(latitude, longitude))
-
-                                        val locationPoint = hashMapOf(
-                                            locationSnapshot.key to 0
-                                        )
-                                        collectionRef.document(locationPackName)
-                                            .set(locationPoint, SetOptions.merge())
-
-                                        currentLocationPackList[locationSnapshot.key] = actualMarker
-                                    }
-                                }
-                            }
-                        }
-                }
-                override fun onCancelled(error: DatabaseError) {
-                    // Hibakezelés
-                    println("Sikertelen adatlekérés: ${error.message}")
-                }
-            })
-
-
-    }
-
 
     //meghatározza  a jelenlegi pozíciót
     private fun getCurrentLocationUser() {
@@ -584,7 +522,6 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         {
             currentLocationPackSet(currentLocationPackData.name)
             val nonNullableCurrentLocationPack: String = currentLocationPack!!
-            getLocationData(nonNullableCurrentLocationPack)
             dialog.dismiss()
             marker.hideInfoWindow()
         }
@@ -671,7 +608,6 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     // a currentLocationPack-et Null-ra állítja
     fun currentLocationPackToNull(view: View) {
         currentLocationPack = null
-        currentLocationPackList.clear()
         supportActionBar?.title = "Üdv, ${auth.currentUser?.displayName}"
         val xButton = findViewById<ImageButton>(R.id.xButton)
         xButton.visibility = View.INVISIBLE
@@ -690,7 +626,6 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         supportActionBar?.title = currentLocationPack
         val xButton = findViewById<ImageButton>(R.id.xButton)
         xButton.visibility = View.VISIBLE
-        currentLocationPackList.clear()
 
         val matchingItem = locationPackDataList.find { it.name == currentLocationPack }
         for (marker in markers)
