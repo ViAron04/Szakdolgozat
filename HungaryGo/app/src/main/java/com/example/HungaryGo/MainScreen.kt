@@ -22,6 +22,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.RatingBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
@@ -48,6 +49,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.FirebaseFirestore
@@ -227,11 +229,15 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                         for (buildingSnapshot in buildingSnapshotLP.children) {
                             if(buildingSnapshot.key == "rating")
                             {
-                                locationPackData.rating = buildingSnapshot.value.toString().toInt()
+                                locationPackData.rating = buildingSnapshot.value.toString().toDouble()
                             }
                             else if(buildingSnapshot.key == "description")
                             {
                                  locationPackData.description = buildingSnapshot . value . toString ()
+                            }
+                            else if(buildingSnapshot.key == "completionNumber")
+                            {
+                                locationPackData.completionNumber = buildingSnapshot.value.toString().toInt()
                             }
                             else
                             {
@@ -491,6 +497,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 if (allOne) {
                     Log.d("FirestoreCheck", "All values are 1.")
 
+                    /*
                     val dialogBuilder = AlertDialog.Builder(this@MainScreen)
                     dialogBuilder.setTitle("Megcsináltad!")
                         .setMessage("Gratulálok, teljesítetted a $currentLocationPack pályát!")
@@ -499,16 +506,63 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                             dialog.dismiss()
                         }
 
-                    currentLocationPackToNull(findViewById<ImageButton>(R.id.xButton))
                     val alertDialog = dialogBuilder.create()
                     alertDialog.show()
+                     */
+                    val dialog = Dialog(this)
+                    dialog.setContentView(R.layout.finish_dialog)
+                    val finishedLocationPack = dialog.findViewById<TextView>(R.id.finishedLocationPack)
+                    val continueButton = dialog.findViewById<Button>(R.id.continueButton)
+                    val ratingBar = dialog.findViewById<RatingBar>(R.id.ratingBar)
+
+                    finishedLocationPack.text = currentLocationPack
+                    val currentLocationPackRating = locationPackDataList.find { it.name == currentLocationPack }
+                    val newRating = ratingBar.rating
+                    val currentAvgRating = currentLocationPackRating?.rating
+                    val currentCompletionNumber = currentLocationPackRating?.completionNumber
+
+                    continueButton.setOnClickListener()
+                    {
+                        val rating = (currentAvgRating!! * currentCompletionNumber!! + newRating) / (currentCompletionNumber+1)
+
+                        val database: DatabaseReference = FirebaseDatabase.getInstance().reference
+
+                        // Az elérési út a megfelelő épülethez
+                        val completionNumberRef = database.child("location packs")
+                            .child(currentLocationPack!!)
+                            .child("completionNumber")
+
+                        completionNumberRef.setValue(currentAvgRating + 1)
+                            .addOnSuccessListener {
+                                println("CompletionNumber sikeresen frissítve")
+                            }
+                            .addOnFailureListener { e ->
+                                println("Hiba történt: ${e.message}")
+                            }
+
+                        val ratingRef = database.child("location packs")
+                            .child(currentLocationPack!!)
+                            .child("rating")
+
+                        ratingRef.setValue(rating)
+                            .addOnSuccessListener {
+                                println("Rating sikeresen frissítve")
+                            }
+                            .addOnFailureListener { e ->
+                                println("Hiba történt: ${e.message}")
+                            }
+
+                        locationPackDataList.find { it.name == currentLocationPack }?.rating = rating
+                        locationPackDataList.find { it.name == currentLocationPack }?.completionNumber = currentCompletionNumber+1
+                        currentLocationPackToNull(findViewById<ImageButton>(R.id.xButton))
+                        dialog.dismiss()
+                    }
+                    dialog.show()
                 }
             }
     }
 
     fun showLPDialog(currentLocationPackData: LocationPackData, marker: Marker) {
-        currentLocationPack = currentLocationPackData.name
-        mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
         val picture: Bitmap = BitmapStore.loadedBitmaps[currentLocationPackData.name]!!
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.location_pack_dialog)
@@ -520,6 +574,8 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
         continueButton.setOnClickListener()
         {
+            currentLocationPack = currentLocationPackData.name
+            mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
             currentLocationPackSet(currentLocationPackData.name)
             val nonNullableCurrentLocationPack: String = currentLocationPack!!
             dialog.dismiss()

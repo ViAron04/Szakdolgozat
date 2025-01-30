@@ -7,7 +7,8 @@ data class LocationPackData(
     var name: String = "",
     var locations: MutableMap<String, LocationDescription?> = mutableMapOf(),
     var description: String = "",
-    var rating: Int? = null
+    var rating: Double? = null,
+    var completionNumber: Int = 0
 ) : Serializable
 // a serializable az intentként törénő küldéshez kell
 

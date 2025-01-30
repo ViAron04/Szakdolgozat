@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:maxHeight="600dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="Megcsináltad!"
+        android:textSize="18sp"
+        android:gravity="center"
+        />
+
+    <TextView
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="Teljesítetted a(z)"
+        android:textSize="14sp"
+        android:gravity="center"
+        />
+
+    <TextView
+        android:id="@+id/finishedLocationPack"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        />
+    <TextView
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="pályát!"
+        android:textSize="14sp"
+        android:gravity="center"
+        />
+
+    <RatingBar
+        android:id="@+id/ratingBar"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:numStars="5"
+        android:stepSize="0.5"
+        />
+
+    <Button
+        android:id="@+id/continueButton"
+        android:onClick="closeInfoWindow"
+        android:text="Díj átvétele"
+        android:layout_gravity="center"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp" />
+</LinearLayout>
