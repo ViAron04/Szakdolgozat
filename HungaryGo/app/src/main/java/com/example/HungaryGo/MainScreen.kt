@@ -497,32 +497,23 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 if (allOne) {
                     Log.d("FirestoreCheck", "All values are 1.")
 
-                    /*
-                    val dialogBuilder = AlertDialog.Builder(this@MainScreen)
-                    dialogBuilder.setTitle("Megcsináltad!")
-                        .setMessage("Gratulálok, teljesítetted a $currentLocationPack pályát!")
-                        .setCancelable(true)
-                        .setPositiveButton("OK") { dialog, _ ->
-                            dialog.dismiss()
-                        }
-
-                    val alertDialog = dialogBuilder.create()
-                    alertDialog.show()
-                     */
                     val dialog = Dialog(this)
                     dialog.setContentView(R.layout.finish_dialog)
                     val finishedLocationPack = dialog.findViewById<TextView>(R.id.finishedLocationPack)
                     val continueButton = dialog.findViewById<Button>(R.id.continueButton)
-                    val ratingBar = dialog.findViewById<RatingBar>(R.id.ratingBar)
+
 
                     finishedLocationPack.text = currentLocationPack
                     val currentLocationPackRating = locationPackDataList.find { it.name == currentLocationPack }
-                    val newRating = ratingBar.rating
-                    val currentAvgRating = currentLocationPackRating?.rating
-                    val currentCompletionNumber = currentLocationPackRating?.completionNumber
+
 
                     continueButton.setOnClickListener()
                     {
+                        val ratingBar = dialog.findViewById<RatingBar>(R.id.ratingBar)
+                        val newRating = ratingBar.rating
+                        val currentAvgRating = currentLocationPackRating?.rating
+                        val currentCompletionNumber = currentLocationPackRating?.completionNumber
+
                         val rating = (currentAvgRating!! * currentCompletionNumber!! + newRating) / (currentCompletionNumber+1)
 
                         val database: DatabaseReference = FirebaseDatabase.getInstance().reference
@@ -532,7 +523,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                             .child(currentLocationPack!!)
                             .child("completionNumber")
 
-                        completionNumberRef.setValue(currentAvgRating + 1)
+                        completionNumberRef.setValue(currentCompletionNumber + 1)
                             .addOnSuccessListener {
                                 println("CompletionNumber sikeresen frissítve")
                             }
