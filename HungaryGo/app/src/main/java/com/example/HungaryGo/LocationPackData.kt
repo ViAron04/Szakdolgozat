@@ -17,6 +17,9 @@ data class LocationDescription (
     var description: String? = null,
     var question: String? = null,
     var answer: String? = null,
-    //var latitude: Double? = null,
-    //var longitude: Double? = null
 ) : Serializable
+
+data class CurrentUserLocationPackData (
+    var completionCount: Int = 0,
+    var usersRating: Double = 0.0
+)

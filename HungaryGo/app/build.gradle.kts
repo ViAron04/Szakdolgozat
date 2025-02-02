@@ -62,6 +62,7 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.15.1")
     implementation("com.google.firebase:firebase-storage-ktx:21.0.1")
     implementation("androidx.activity:activity:1.9.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
 
     kapt("com.github.bumptech.glide:compiler:4.15.1")
     testImplementation("junit:junit:4.13.2")

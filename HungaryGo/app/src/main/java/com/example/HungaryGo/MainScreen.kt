@@ -3,7 +3,6 @@ package com.example.HungaryGo
 import CustomInfoWindowForGoogleMap
 import android.Manifest
 import android.animation.ValueAnimator
-import android.app.AlertDialog
 import android.app.Dialog
 
 import android.content.Intent
@@ -29,8 +28,8 @@ import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
-import androidx.core.view.marginTop
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -55,7 +54,10 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.ktx.Firebase
-import org.w3c.dom.Text
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 
 class MainScreen : AppCompatActivity(), OnMapReadyCallback,
@@ -152,20 +154,17 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
                     //kattinthatatlanná tétel
                     mGoogleMap?.setOnMarkerClickListener { marker ->
-                        if(marker.title == "szerenysegem")
-                        {
+                        if (marker.title == "szerenysegem") {
                             true
-                        }
-                        else
-                        {
+                        } else {
                             false
                         }
                     }
 
                     //a jelenleg kiválasztott pálya helyszínei
-                    val currentLocationPackList = locationPackDataList.find { it.name == currentLocationPack }
-                    if (currentLocationPackList != null)
-                    {
+                    val currentLocationPackList =
+                        locationPackDataList.find { it.name == currentLocationPack }
+                    if (currentLocationPackList != null) {
                         for (currentLocationPack in currentLocationPackList.locations) {
                             val distance = FloatArray(1)
                             Location.distanceBetween(
@@ -209,6 +208,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     }
 
     var isLoaded = false
+
     //markerek lehelyezése, az infowindowra történő kattintás kezelése
     private fun getLocationPacks() {
         //belép a location packsba
@@ -227,36 +227,40 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                         locationPackData.name = buildingSnapshotLP.key.toString()
 
                         for (buildingSnapshot in buildingSnapshotLP.children) {
-                            if(buildingSnapshot.key == "rating")
-                            {
-                                locationPackData.rating = buildingSnapshot.value.toString().toDouble()
-                            }
-                            else if(buildingSnapshot.key == "description")
-                            {
-                                 locationPackData.description = buildingSnapshot . value . toString ()
-                            }
-                            else if(buildingSnapshot.key == "completionNumber")
-                            {
-                                locationPackData.completionNumber = buildingSnapshot.value.toString().toInt()
-                            }
-                            else
-                            {
+                            if (buildingSnapshot.key == "rating") {
+                                locationPackData.rating =
+                                    buildingSnapshot.value.toString().toDouble()
+                            } else if (buildingSnapshot.key == "description") {
+                                locationPackData.description = buildingSnapshot.value.toString()
+                            } else if (buildingSnapshot.key == "completionNumber") {
+                                locationPackData.completionNumber =
+                                    buildingSnapshot.value.toString().toInt()
+                            } else {
                                 val buildingMap = buildingSnapshot.value as Map<String, Any>
                                 //val latitude = buildingMap["latitude"] as Double
                                 //val longitude = buildingMap["longitude"] as Double
                                 val markerOptions = MarkerOptions()
-                                    .position(LatLng(buildingMap["latitude"] as Double, buildingMap["longitude"] as Double))
+                                    .position(
+                                        LatLng(
+                                            buildingMap["latitude"] as Double,
+                                            buildingMap["longitude"] as Double
+                                        )
+                                    )
                                 val description = buildingMap["Description"] as String?
                                 val name = buildingSnapshot.key.toString()
                                 var question = null as String?
                                 var answer = null as String?
-                                if(buildingMap.containsKey("Question"))
-                                {
+                                if (buildingMap.containsKey("Question")) {
                                     question = buildingMap["Question"] as String?
                                     answer = buildingMap["Answer"] as String?
                                 }
 
-                                locationPackData.locations[name] = LocationDescription(markerOptions, description = description, question = question, answer = answer)
+                                locationPackData.locations[name] = LocationDescription(
+                                    markerOptions,
+                                    description = description,
+                                    question = question,
+                                    answer = answer
+                                )
 
                                 val marker = mGoogleMap?.addMarker(
                                     markerOptions
@@ -268,8 +272,14 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                         }
                         locationPackDataList.add(locationPackData)
                     }
-                    mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
-                isLoaded=true;
+                    mGoogleMap?.setInfoWindowAdapter(
+                        CustomInfoWindowForGoogleMap(
+                            this@MainScreen,
+                            locationPackDataList,
+                            currentLocationPack
+                        )
+                    )
+                    isLoaded = true;
                 } else {
                     println("Nem találtam helyszíneket az adatbázisban")
                 }
@@ -278,18 +288,14 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 mGoogleMap?.setOnInfoWindowClickListener { marker ->
                     var currentLocationPackData: LocationPackData = LocationPackData()
                     for (locationPack in locationPackDataList) {
-                        if(locationPack.locations.containsKey(marker.title.toString()))
-                        {
+                        if (locationPack.locations.containsKey(marker.title.toString())) {
                             currentLocationPackData = locationPack
                         }
                     }
 
-                    if(currentLocationPack == null)
-                        {
-                            showLPDialog(currentLocationPackData, marker)
-                        }
-                    else if (currentLocationPackData.locations.containsKey(marker.title))
-                    {
+                    if (currentLocationPack == null) {
+                        showLPDialog(currentLocationPackData, marker)
+                    } else if (currentLocationPackData.locations.containsKey(marker.title)) {
                         showLDialog(currentLocationPackData, marker)
                     }
                 }
@@ -349,7 +355,11 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             FINE_PERMISSION_CODE -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getCurrentLocationUser()
             } else {
-                Toast.makeText(this, "Helymegosztás engedélyezése nélkül az alkalmazás nem használható megfelelően :(", Toast.LENGTH_LONG)
+                Toast.makeText(
+                    this,
+                    "Helymegosztás engedélyezése nélkül az alkalmazás nem használható megfelelően :(",
+                    Toast.LENGTH_LONG
+                )
                     .show()
             }
         }
@@ -492,65 +502,68 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
     //ellenőrzi, megvan-e az összes helyszín a pályából
     fun checkLocations() {
-            checkLocationPackCompletion(currentLocationPack.toString()) { allOne ->
-                //dialog megjelenítése
-                if (allOne) {
-                    Log.d("FirestoreCheck", "All values are 1.")
+        checkLocationPackCompletion(currentLocationPack.toString()) { allOne ->
+            //dialog megjelenítése
+            if (allOne) {
+                Log.d("FirestoreCheck", "All values are 1.")
 
-                    val dialog = Dialog(this)
-                    dialog.setContentView(R.layout.finish_dialog)
-                    val finishedLocationPack = dialog.findViewById<TextView>(R.id.finishedLocationPack)
-                    val continueButton = dialog.findViewById<Button>(R.id.continueButton)
-
-
-                    finishedLocationPack.text = currentLocationPack
-                    val currentLocationPackRating = locationPackDataList.find { it.name == currentLocationPack }
+                val dialog = Dialog(this)
+                dialog.setContentView(R.layout.finish_dialog)
+                val finishedLocationPack = dialog.findViewById<TextView>(R.id.finishedLocationPack)
+                val continueButton = dialog.findViewById<Button>(R.id.continueButton)
 
 
-                    continueButton.setOnClickListener()
-                    {
-                        val ratingBar = dialog.findViewById<RatingBar>(R.id.ratingBar)
-                        val newRating = ratingBar.rating
-                        val currentAvgRating = currentLocationPackRating?.rating
-                        val currentCompletionNumber = currentLocationPackRating?.completionNumber
+                finishedLocationPack.text = currentLocationPack
+                val currentLocationPackRating =
+                    locationPackDataList.find { it.name == currentLocationPack }
 
-                        val rating = (currentAvgRating!! * currentCompletionNumber!! + newRating) / (currentCompletionNumber+1)
 
-                        val database: DatabaseReference = FirebaseDatabase.getInstance().reference
+                continueButton.setOnClickListener()
+                {
+                    val ratingBar = dialog.findViewById<RatingBar>(R.id.ratingBar)
+                    val newRating = ratingBar.rating
+                    val currentAvgRating = currentLocationPackRating?.rating
+                    val currentCompletionNumber = currentLocationPackRating?.completionNumber
 
-                        // Az elérési út a megfelelő épülethez
-                        val completionNumberRef = database.child("location packs")
-                            .child(currentLocationPack!!)
-                            .child("completionNumber")
+                    val rating =
+                        (currentAvgRating!! * currentCompletionNumber!! + newRating) / (currentCompletionNumber + 1)
 
-                        completionNumberRef.setValue(currentCompletionNumber + 1)
-                            .addOnSuccessListener {
-                                println("CompletionNumber sikeresen frissítve")
-                            }
-                            .addOnFailureListener { e ->
-                                println("Hiba történt: ${e.message}")
-                            }
+                    val database: DatabaseReference = FirebaseDatabase.getInstance().reference
 
-                        val ratingRef = database.child("location packs")
-                            .child(currentLocationPack!!)
-                            .child("rating")
+                    // Az elérési út a megfelelő épülethez
+                    val completionNumberRef = database.child("location packs")
+                        .child(currentLocationPack!!)
+                        .child("completionNumber")
 
-                        ratingRef.setValue(rating)
-                            .addOnSuccessListener {
-                                println("Rating sikeresen frissítve")
-                            }
-                            .addOnFailureListener { e ->
-                                println("Hiba történt: ${e.message}")
-                            }
+                    completionNumberRef.setValue(currentCompletionNumber + 1)
+                        .addOnSuccessListener {
+                            println("CompletionNumber sikeresen frissítve")
+                        }
+                        .addOnFailureListener { e ->
+                            println("Hiba történt: ${e.message}")
+                        }
 
-                        locationPackDataList.find { it.name == currentLocationPack }?.rating = rating
-                        locationPackDataList.find { it.name == currentLocationPack }?.completionNumber = currentCompletionNumber+1
-                        currentLocationPackToNull(findViewById<ImageButton>(R.id.xButton))
-                        dialog.dismiss()
-                    }
-                    dialog.show()
+                    val ratingRef = database.child("location packs")
+                        .child(currentLocationPack!!)
+                        .child("rating")
+
+                    ratingRef.setValue(rating)
+                        .addOnSuccessListener {
+                            println("Rating sikeresen frissítve")
+                        }
+                        .addOnFailureListener { e ->
+                            println("Hiba történt: ${e.message}")
+                        }
+
+                    locationPackDataList.find { it.name == currentLocationPack }?.rating = rating
+                    locationPackDataList.find { it.name == currentLocationPack }?.completionNumber =
+                        currentCompletionNumber + 1
+                    currentLocationPackToNull(findViewById<ImageButton>(R.id.xButton))
+                    dialog.dismiss()
                 }
+                dialog.show()
             }
+        }
     }
 
     fun showLPDialog(currentLocationPackData: LocationPackData, marker: Marker) {
@@ -566,7 +579,13 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         continueButton.setOnClickListener()
         {
             currentLocationPack = currentLocationPackData.name
-            mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
+            mGoogleMap?.setInfoWindowAdapter(
+                CustomInfoWindowForGoogleMap(
+                    this@MainScreen,
+                    locationPackDataList,
+                    currentLocationPack
+                )
+            )
             currentLocationPackSet(currentLocationPackData.name)
             val nonNullableCurrentLocationPack: String = currentLocationPack!!
             dialog.dismiss()
@@ -578,8 +597,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         dialog.show()
     }
 
-    fun showLDialog(currentLocationPackData: LocationPackData, marker: Marker)
-    {
+    fun showLDialog(currentLocationPackData: LocationPackData, marker: Marker) {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.location_dialog)
         dialog.setCancelable(true)
@@ -592,13 +610,11 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         val currentLocationData = currentLocationPackData.locations[marker.title]
 
         lName.text = marker.title
-        if(currentLocationData?.description != null)
-        {
+        if (currentLocationData?.description != null) {
             lDescription.text = currentLocationData.description
         }
 
-        if(currentLocationData?.question != null)
-        {
+        if (currentLocationData?.question != null) {
             val params = lQuestion.layoutParams as ViewGroup.MarginLayoutParams
             params.topMargin = 20
             lQuestion.layoutParams = params
@@ -606,34 +622,15 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             lQuestionAnswer.visibility = View.VISIBLE
         }
 
-
-
         continueButton.setOnClickListener {
-            if(lQuestionAnswer.text.toString() == currentLocationData?.answer || currentLocationData?.question == null) {
-                val dbfirestore = FirebaseFirestore.getInstance()
-                val currentUserEmail = auth.currentUser?.email.toString()
-                val collectionRef =
-                    dbfirestore.collection("userpoints").document(currentUserEmail)
-                        .collection("inprogress")
-
-                val locationPoint = hashMapOf(
-                    marker.title to 1
-                )
-                var currentLocationPackNonNullable = currentLocationPack.toString()
-                collectionRef.document(currentLocationPackNonNullable)
-                    .set(locationPoint, SetOptions.merge())
-                Toast.makeText(
-                    applicationContext,
-                    "Helyszín megcsinálva!",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                checkLocations()
-                dialog.dismiss()
-                marker.hideInfoWindow()
-            }
-            else
-            {
+            if (lQuestionAnswer.text.toString() == currentLocationData?.answer || currentLocationData?.question == null) {
+                lifecycleScope.launch {
+                    updateLocationInFirestore(currentLocationPackData, marker.title.toString())
+                    checkLocations()
+                    dialog.dismiss()
+                    marker.hideInfoWindow()
+                }
+            } else {
                 Toast.makeText(
                     applicationContext,
                     "Rossz válasz, a helyszín teljesítéséhez próbáld újra!",
@@ -642,6 +639,48 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             }
         }
         dialog.show()
+    }
+
+    private suspend fun updateLocationInFirestore(currentLocationPackData: LocationPackData, markerTitle: String) = withContext(Dispatchers.IO) {
+        try {
+
+
+            val dbfirestore = FirebaseFirestore.getInstance()
+            val currentUserEmail = auth.currentUser?.email.toString()
+            val userRef =
+                dbfirestore.collection("userpoints").document(currentUserEmail)
+                    .collection("inprogress").document(currentLocationPack.toString())
+
+            // Dokumentum lekérése
+            val document = userRef.get().await()
+            //A pálya végigvitelének mennyisége és a felhasználó értékelése róla
+            if (!document.contains("usersRating")) {
+                val generalData = mutableMapOf<String, Any>()
+                generalData["completionCount"] = 0
+                generalData["usersRating"] = 0
+
+                userRef.set(generalData, SetOptions.merge()).await()
+            }
+            //Minden helyszín a pályában legyen nulla
+            if (!document.contains("locations")) {
+                val updatedLocations = mutableMapOf<String, Int>()
+                for (location in currentLocationPackData.locations) {
+                    updatedLocations[location.key] = 0
+                }
+                val locationData = mapOf("locations" to updatedLocations)
+                userRef.set(locationData, SetOptions.merge()).await()
+            }
+
+            //aktuális helyszín-t egyre kell állítani
+            val locationData = mapOf(
+                "locations" to mapOf(markerTitle to 1)
+            )
+            userRef.set(locationData, SetOptions.merge()).await()
+
+
+        } catch (e: Exception) {
+            Log.e("Firestore", "Hiba történt: ", e)
+        }
     }
 
     fun markerReload(view: View) {
@@ -658,27 +697,35 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         supportActionBar?.title = "Üdv, ${auth.currentUser?.displayName}"
         val xButton = findViewById<ImageButton>(R.id.xButton)
         xButton.visibility = View.INVISIBLE
-        mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
+        mGoogleMap?.setInfoWindowAdapter(
+            CustomInfoWindowForGoogleMap(
+                this@MainScreen,
+                locationPackDataList,
+                currentLocationPack
+            )
+        )
 
-        for (marker in markers)
-        {
+        for (marker in markers) {
             marker?.isVisible = true
         }
     }
 
-    fun currentLocationPackSet(locationName: String)
-    {
+    fun currentLocationPackSet(locationName: String) {
         currentLocationPack = locationName
-        mGoogleMap?.setInfoWindowAdapter(CustomInfoWindowForGoogleMap(this@MainScreen, locationPackDataList, currentLocationPack))
+        mGoogleMap?.setInfoWindowAdapter(
+            CustomInfoWindowForGoogleMap(
+                this@MainScreen,
+                locationPackDataList,
+                currentLocationPack
+            )
+        )
         supportActionBar?.title = currentLocationPack
         val xButton = findViewById<ImageButton>(R.id.xButton)
         xButton.visibility = View.VISIBLE
 
         val matchingItem = locationPackDataList.find { it.name == currentLocationPack }
-        for (marker in markers)
-        {
-            if (!matchingItem?.locations!!.containsKey(marker?.title))
-            {
+        for (marker in markers) {
+            if (!matchingItem?.locations!!.containsKey(marker?.title)) {
                 marker?.isVisible = false
             }
         }
@@ -694,12 +741,13 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
         documentRef.get()
             .addOnSuccessListener { docSnapshot ->
-                val data = docSnapshot.data
-                val allOne = data?.all { (_, value) ->
-                    value == 1L || value == 1.0
-                } ?: false
-
-                callback(allOne)
+                if (docSnapshot.exists()) {
+                    val locations = docSnapshot.get("locations") as? Map<String, Any>
+                    val allOne = locations?.all { (_, value) -> value == 1L || value == 1.0 } ?: false
+                    callback(allOne)
+                } else {
+                    callback(false)
+                }
             }
             .addOnFailureListener {
                 callback(false)
