@@ -525,6 +525,8 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     val currentAvgRating = currentLocationPackRating?.rating
                     val currentCompletionNumber = currentLocationPackRating?.completionNumber
 
+                    updateUsersRatingAndCompletionCount(newRating)
+
                     val rating =
                         (currentAvgRating!! * currentCompletionNumber!! + newRating) / (currentCompletionNumber + 1)
 
@@ -710,6 +712,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
+    // a currentLocationPack értékét megváltoztatja
     fun currentLocationPackSet(locationName: String) {
         currentLocationPack = locationName
         mGoogleMap?.setInfoWindowAdapter(
@@ -728,6 +731,29 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             if (!matchingItem?.locations!!.containsKey(marker?.title)) {
                 marker?.isVisible = false
             }
+        }
+    }
+
+    //usersRating és completionCount átírása Firestore-ban
+    fun updateUsersRatingAndCompletionCount(usersRating: Float)
+    {
+        val dbfirestore = FirebaseFirestore.getInstance()
+        val currentUserEmail = auth.currentUser?.email.toString()
+        val documentRef = dbfirestore.collection("userpoints")
+            .document(currentUserEmail)
+            .collection("inprogress")
+            .document(currentLocationPack!!)
+
+        documentRef.get().addOnSuccessListener { docSnapshot ->
+            if (docSnapshot.exists()) {
+
+                val currentCompletionCount = docSnapshot.getLong("completionCount") ?: 0
+                documentRef.update("completionCount", currentCompletionCount + 1)
+
+                documentRef.update("usersRating", usersRating)
+            }
+        }.addOnFailureListener { e ->
+            Log.e("Firestore", "Hiba történt a dokumentum lekérésekor", e)
         }
     }
 
