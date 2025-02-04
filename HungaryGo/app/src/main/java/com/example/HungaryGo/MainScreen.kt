@@ -43,6 +43,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -56,8 +57,11 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 
 class MainScreen : AppCompatActivity(), OnMapReadyCallback,
@@ -511,7 +515,19 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 dialog.setContentView(R.layout.finish_dialog)
                 val finishedLocationPack = dialog.findViewById<TextView>(R.id.finishedLocationPack)
                 val continueButton = dialog.findViewById<Button>(R.id.continueButton)
+                val ratingBar = dialog.findViewById<RatingBar>(R.id.ratingBar)
 
+                val dbfirestore = FirebaseFirestore.getInstance()
+                val currentUserEmail = auth.currentUser?.email.toString()
+                val documentRef = dbfirestore.collection("userpoints")
+                    .document(currentUserEmail)
+                    .collection("inprogress")
+                    .document(currentLocationPack!!)
+
+                documentRef.get().addOnSuccessListener { docSnapshot ->
+                    val usersRating = docSnapshot.getLong("usersRating") ?: 0
+                    ratingBar.rating = usersRating.toFloat()
+                }
 
                 finishedLocationPack.text = currentLocationPack
                 val currentLocationPackRating =
@@ -521,47 +537,15 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 continueButton.setOnClickListener()
                 {
                     val ratingBar = dialog.findViewById<RatingBar>(R.id.ratingBar)
-                    val newRating = ratingBar.rating
+                    val newRating = ratingBar.rating.toDouble()
                     val currentAvgRating = currentLocationPackRating?.rating
                     val currentCompletionNumber = currentLocationPackRating?.completionNumber
 
-                    updateUsersRatingAndCompletionCount(newRating)
-
-                    val rating =
-                        (currentAvgRating!! * currentCompletionNumber!! + newRating) / (currentCompletionNumber + 1)
-
-                    val database: DatabaseReference = FirebaseDatabase.getInstance().reference
-
-                    // Az elérési út a megfelelő épülethez
-                    val completionNumberRef = database.child("location packs")
-                        .child(currentLocationPack!!)
-                        .child("completionNumber")
-
-                    completionNumberRef.setValue(currentCompletionNumber + 1)
-                        .addOnSuccessListener {
-                            println("CompletionNumber sikeresen frissítve")
-                        }
-                        .addOnFailureListener { e ->
-                            println("Hiba történt: ${e.message}")
-                        }
-
-                    val ratingRef = database.child("location packs")
-                        .child(currentLocationPack!!)
-                        .child("rating")
-
-                    ratingRef.setValue(rating)
-                        .addOnSuccessListener {
-                            println("Rating sikeresen frissítve")
-                        }
-                        .addOnFailureListener { e ->
-                            println("Hiba történt: ${e.message}")
-                        }
-
-                    locationPackDataList.find { it.name == currentLocationPack }?.rating = rating
-                    locationPackDataList.find { it.name == currentLocationPack }?.completionNumber =
-                        currentCompletionNumber + 1
-                    currentLocationPackToNull(findViewById<ImageButton>(R.id.xButton))
-                    dialog.dismiss()
+                    lifecycleScope.launch {
+                        updateUsersRatingAndCompletionCount(newRating, currentAvgRating!!, currentCompletionNumber!!)
+                        dialog.dismiss()
+                        currentLocationPackToNull(findViewById<ImageButton>(R.id.xButton))
+                    }
                 }
                 dialog.show()
             }
@@ -734,26 +718,73 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    //usersRating és completionCount átírása Firestore-ban
-    fun updateUsersRatingAndCompletionCount(usersRating: Float)
+    //usersRating és completionCount átírása Firestore-ban, a rating frissítése realtime database-ben
+    suspend fun  updateUsersRatingAndCompletionCount(newRating: Double, currentAvgRating: Double, currentCompletionNumber: Int)
     {
-        val dbfirestore = FirebaseFirestore.getInstance()
-        val currentUserEmail = auth.currentUser?.email.toString()
-        val documentRef = dbfirestore.collection("userpoints")
-            .document(currentUserEmail)
-            .collection("inprogress")
-            .document(currentLocationPack!!)
+        return withContext(Dispatchers.IO) {
+            try {
 
-        documentRef.get().addOnSuccessListener { docSnapshot ->
-            if (docSnapshot.exists()) {
 
-                val currentCompletionCount = docSnapshot.getLong("completionCount") ?: 0
-                documentRef.update("completionCount", currentCompletionCount + 1)
+                val dbfirestore = FirebaseFirestore.getInstance()
+                val currentUserEmail = auth.currentUser?.email.toString()
+                val documentRef = dbfirestore.collection("userpoints")
+                    .document(currentUserEmail)
+                    .collection("inprogress")
+                    .document(currentLocationPack!!)
 
-                documentRef.update("usersRating", usersRating)
+                // Convert to coroutine
+                val docSnapshot = suspendCancellableCoroutine { continuation ->
+                    documentRef.get()
+                        .addOnSuccessListener { continuation.resume(it) }
+                        .addOnFailureListener { continuation.resumeWithException(it) }
+                }
+
+                if (docSnapshot.exists()) {
+                    val currentCompletionCount = docSnapshot.getLong("completionCount") ?: 0
+                    val currentUsersRating = docSnapshot.getDouble("usersRating")
+
+                    // Use Tasks.await() for Firebase operations
+                    Tasks.await(documentRef.update("completionCount", currentCompletionCount + 1))
+
+                    val database: DatabaseReference = FirebaseDatabase.getInstance().reference
+
+                    if (currentUsersRating == 0.0) {
+                        Tasks.await(documentRef.update("usersRating", newRating))
+                        val rating = (currentAvgRating * currentCompletionNumber + newRating) / (currentCompletionNumber + 1)
+
+                        val completionNumberRef = database.child("location packs")
+                            .child(currentLocationPack!!)
+                            .child("completionNumber")
+
+                        Tasks.await(completionNumberRef.setValue(currentCompletionNumber + 1))
+
+                        val ratingRef = database.child("location packs")
+                            .child(currentLocationPack!!)
+                            .child("rating")
+
+                        Tasks.await(ratingRef.setValue(rating))
+
+                        locationPackDataList.find { it.name == currentLocationPack }?.rating = rating
+                        locationPackDataList.find { it.name == currentLocationPack }?.completionNumber = currentCompletionNumber + 1
+                        } else if (currentUsersRating != newRating) {
+                        Tasks.await(documentRef.update("usersRating", newRating))
+
+                        val rating = ((currentAvgRating * currentCompletionNumber - currentUsersRating!!.toFloat()) + newRating) / (currentCompletionNumber)
+
+                        val ratingRef = database.child("location packs")
+                            .child(currentLocationPack!!)
+                            .child("rating")
+
+                        // Várakozás a rating frissítésére
+                        Tasks.await(ratingRef.setValue(rating))
+
+                        locationPackDataList.find { it.name == currentLocationPack }?.rating = rating
+                        locationPackDataList.find { it.name == currentLocationPack }?.completionNumber = currentCompletionNumber + 1
+                        }
+                    }
+            } catch (e: Exception) {
+                Log.e("Firestore", "Hiba történt: ", e)
             }
-        }.addOnFailureListener { e ->
-            Log.e("Firestore", "Hiba történt a dokumentum lekérésekor", e)
         }
     }
 
