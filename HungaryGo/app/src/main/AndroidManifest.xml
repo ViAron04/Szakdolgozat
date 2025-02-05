@@ -18,26 +18,26 @@
         android:theme="@style/Theme.Kotlin_gyakorlas"
         tools:targetApi="31">
         <activity
-            android:name=".OptionsScreen"
+            android:name=".ui.Options.OptionsScreen"
             android:exported="false" />
         <activity
-            android:name=".RegistrationScreen"
+            android:name=".ui.Registration.RegistrationScreen"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Maker"
+            android:name=".ui.Maker.MakerScreen"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".gloryWall"
+            android:name=".ui.GloryWall.GloryWallScreen"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".AdventureList"
+            android:name=".ui.AdventureList.AdventureListScreen"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".SignInScreen"
+            android:name=".ui.SignIn.SignInScreen"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -52,7 +52,7 @@
             android:value="@string/google_map_api_key" />
 
         <activity
-            android:name=".MainScreen"
+            android:name=".ui.Main.MainScreen"
             android:exported="true"
             android:screenOrientation="portrait" />
     </application>

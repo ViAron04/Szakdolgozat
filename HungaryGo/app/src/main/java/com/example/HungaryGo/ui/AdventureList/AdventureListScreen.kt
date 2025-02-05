@@ -1,14 +1,13 @@
-package com.example.HungaryGo
+package com.example.HungaryGo.ui.AdventureList
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.maps.model.MarkerOptions
+import com.example.HungaryGo.LocationPackData
+import com.example.HungaryGo.R
 
-class AdventureList : AppCompatActivity() {
+class AdventureListScreen : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_adventure_list)

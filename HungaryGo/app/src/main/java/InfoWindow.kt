@@ -1,23 +1,16 @@
 import android.app.Activity
 import android.content.Context
 import android.graphics.BitmapFactory
-import android.graphics.drawable.Drawable
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import com.bumptech.glide.Glide
 import com.example.HungaryGo.R
-import com.example.HungaryGo.databinding.ActivityMainScreenBinding
-import com.example.HungaryGo.databinding.InfowindowBinding
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 import com.google.firebase.storage.FirebaseStorage
-import com.bumptech.glide.request.RequestOptions
 import com.example.HungaryGo.LocationPackData
-import com.example.HungaryGo.MainScreen
+import com.example.HungaryGo.ui.Main.MainScreen
 import java.text.Normalizer
 
 

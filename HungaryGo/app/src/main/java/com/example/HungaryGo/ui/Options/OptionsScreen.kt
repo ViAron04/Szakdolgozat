@@ -1,10 +1,7 @@
-package com.example.HungaryGo
+package com.example.HungaryGo.ui.Options
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 
 class OptionsScreen : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

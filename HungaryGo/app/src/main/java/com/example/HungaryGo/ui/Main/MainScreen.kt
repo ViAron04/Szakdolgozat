@@ -1,4 +1,4 @@
-package com.example.HungaryGo
+package com.example.HungaryGo.ui.Main
 
 import CustomInfoWindowForGoogleMap
 import android.Manifest
@@ -30,6 +30,14 @@ import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
+import com.example.HungaryGo.LocationDescription
+import com.example.HungaryGo.LocationPackData
+import com.example.HungaryGo.R
+import com.example.HungaryGo.ui.AdventureList.AdventureListScreen
+import com.example.HungaryGo.ui.Maker.MakerScreen
+import com.example.HungaryGo.ui.Options.OptionsScreen
+import com.example.HungaryGo.ui.SignIn.SignInScreen
+import com.example.HungaryGo.ui.GloryWall.GloryWallScreen
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -66,6 +74,9 @@ import kotlin.coroutines.resumeWithException
 
 class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     NavigationView.OnNavigationItemSelectedListener {
+
+
+
 
     var mGoogleMap: GoogleMap? = null
 
@@ -459,18 +470,18 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         when (item.itemId) {
             R.id.kalandKeres -> {
                 //a pályák adatainak küldése
-                val intent = Intent(this@MainScreen, AdventureList::class.java)
+                val intent = Intent(this@MainScreen, AdventureListScreen::class.java)
                 intent.putExtra("locationPackList", ArrayList(locationPackDataList))
 
                 startActivity(intent)
             }
 
             R.id.ujKaland -> {
-                startActivity(Intent(this@MainScreen, Maker::class.java))
+                startActivity(Intent(this@MainScreen, MakerScreen::class.java))
             }
 
             R.id.dicsFal -> {
-                startActivity(Intent(this@MainScreen, gloryWall::class.java))
+                startActivity(Intent(this@MainScreen, GloryWallScreen::class.java))
             }
 
             R.id.stat -> {

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SignInScreen"
+    tools:context=".ui.SignIn.SignInScreen"
     android:background="@drawable/signinhatter_demo"
     android:orientation="vertical"
     android:gravity="bottom|center_horizontal"

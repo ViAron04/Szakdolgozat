@@ -1,4 +1,4 @@
-package com.example.HungaryGo
+package com.example.HungaryGo.ui.SignIn
 
 import android.content.ContentValues.TAG
 import android.content.Intent
@@ -8,6 +8,9 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.HungaryGo.R
+import com.example.HungaryGo.ui.Main.MainScreen
+import com.example.HungaryGo.ui.Registration.RegistrationScreen
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
