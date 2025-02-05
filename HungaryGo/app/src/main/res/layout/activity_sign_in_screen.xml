@@ -60,7 +60,7 @@
         android:layout_width="300dp"
         android:layout_height="50dp"
         android:backgroundTint="@color/registrationbutton"
-        android:onClick="googleSignIn"
+        android:onClick="googleSignInClick"
         android:text="Google bejelentkezés"/>
 
 

@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.HungaryGo.data.repository.RegistrationSignInRepository
+import com.example.HungaryGo.data.repository.UserRepository
 import kotlinx.coroutines.launch
 
 class RegistrationViewModel: ViewModel (){
@@ -15,7 +15,7 @@ class RegistrationViewModel: ViewModel (){
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> get() = _errorMessage
 
-    private val repository: RegistrationSignInRepository = RegistrationSignInRepository()
+    private val repository: UserRepository = UserRepository()
 
     fun registerUser(username: String, email: String, password: String, password2: String) {
 

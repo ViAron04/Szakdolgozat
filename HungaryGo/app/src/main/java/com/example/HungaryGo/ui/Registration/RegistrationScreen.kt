@@ -31,7 +31,7 @@ class RegistrationScreen : AppCompatActivity() {
         //bejelentkezőképernyőre lépés
         viewModel.registrationStatus.observe(this, Observer { success ->
             if(success) {
-                Toast.makeText(this, "Sikeres regisztráció!", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Sikeres regisztráció :)", Toast.LENGTH_LONG).show()
                 startActivity(Intent(this, SignInScreen::class.java))
             }
         })

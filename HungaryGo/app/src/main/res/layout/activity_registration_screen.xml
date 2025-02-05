@@ -1,31 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".ui.Registration.RegistrationScreen">
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="257dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="40dp"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:text="Email címed:"
+        android:textSize="25sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <EditText
         android:id="@+id/emailRegister"
         android:layout_width="321dp"
         android:layout_height="63dp"
-        android:layout_marginEnd="44dp"
-        android:layout_marginBottom="412dp"
+        android:layout_marginBottom="30dp"
         android:ems="10"
         android:inputType="textEmailAddress"
+        android:gravity="center"
+        android:layout_gravity="center"
         android:textSize="25sp"
         android:theme="@style/EditTextUnderline"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/textView2"
         android:layout_width="257dp"
         android:layout_height="45dp"
-        android:layout_marginEnd="108dp"
-        android:layout_marginBottom="476dp"
-        android:text="Email címed:"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:text="Felhasználóneved:"
         android:textSize="25sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -34,22 +48,36 @@
         android:id="@+id/usernameRegister"
         android:layout_width="321dp"
         android:layout_height="63dp"
-        android:layout_marginEnd="44dp"
-        android:layout_marginBottom="564dp"
+        android:layout_marginBottom="30dp"
         android:ems="10"
+        android:gravity="center"
+        android:layout_gravity="center"
         android:inputType="text"
         android:textSize="25sp"
         android:theme="@style/EditTextUnderline"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="257dp"
+        android:layout_height="45dp"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:text="Jelszavad:"
+        android:textSize="25sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
     <EditText
-        android:id="@+id/passwordRegister2"
+        android:id="@+id/passwordRegister"
         android:layout_width="321dp"
         android:layout_height="63dp"
-        android:layout_marginEnd="44dp"
-        android:layout_marginBottom="124dp"
+        android:layout_marginBottom="30dp"
         android:ems="10"
+        android:gravity="center"
+        android:layout_gravity="center"
         android:inputType="textPassword"
         android:textSize="25sp"
         android:theme="@style/EditTextUnderline"
@@ -60,45 +88,24 @@
         android:id="@+id/textView3"
         android:layout_width="257dp"
         android:layout_height="45dp"
-        android:layout_marginEnd="108dp"
-        android:layout_marginBottom="192dp"
         android:text="Jelszavad újra:"
+        android:gravity="center"
+        android:layout_gravity="center"
         android:textSize="25sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <EditText
-        android:id="@+id/passwordRegister"
+        android:id="@+id/passwordRegister2"
         android:layout_width="321dp"
         android:layout_height="63dp"
-        android:layout_marginEnd="44dp"
-        android:layout_marginBottom="272dp"
+        android:layout_marginBottom="30dp"
         android:ems="10"
+        android:gravity="center"
+        android:layout_gravity="center"
         android:inputType="textPassword"
         android:textSize="25sp"
         android:theme="@style/EditTextUnderline"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="257dp"
-        android:layout_height="45dp"
-        android:layout_marginEnd="108dp"
-        android:layout_marginBottom="336dp"
-        android:text="Jelszavad:"
-        android:textSize="25sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="257dp"
-        android:layout_height="45dp"
-        android:layout_marginEnd="108dp"
-        android:layout_marginBottom="628dp"
-        android:text="Felhasználóneved:"
-        android:textSize="25sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -106,12 +113,12 @@
         android:id="@+id/button4"
         android:layout_width="255dp"
         android:layout_height="57dp"
-        android:layout_marginEnd="76dp"
-        android:layout_marginBottom="44dp"
+        android:gravity="center"
+        android:layout_gravity="center"
         android:text="Regisztrálok"
         android:textSize="25sp"
         android:onClick="registerClick"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
