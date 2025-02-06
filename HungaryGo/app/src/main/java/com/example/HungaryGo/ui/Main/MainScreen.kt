@@ -124,7 +124,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         setContentView(binding.root)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        val locationRepository = LocationRepository(FirebaseDatabase.getInstance())
+        val locationRepository = LocationRepository(FirebaseDatabase.getInstance(), fusedLocationClient)
 
         // ViewModel létrehozása Factoryval
         viewModel = ViewModelProvider(this, MainViewModelFactory(locationRepository))
@@ -135,19 +135,18 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         setupObservers()
 
         viewModel.loadLocationPacks()
-        observeViewModel()
+        getCurrentLocationUser()
 
         auth = Firebase.auth
 
         fusedLocationClient =
             LocationServices.getFusedLocationProviderClient(this) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
-        getCurrentLocationUser()
+
 
         var currentMarker: Marker? = null
 
         var currentNearbyLocation: String? = null
 
-        //getLocationPacks()
 
         locationCallback1 = object : LocationCallback() {
 
@@ -162,12 +161,12 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
                     var icon = BitmapDescriptorFactory.fromResource(R.drawable.usericondemo)
 
-                    currentMarker = mGoogleMap?.addMarker(
+                    currentMarker = mGoogleMap.addMarker(
                         MarkerOptions().position(latLng).title("szerenysegem").icon(icon)
                     )!!
 
                     //kattinthatatlanná tétel
-                    mGoogleMap?.setOnMarkerClickListener { marker ->
+                    mGoogleMap.setOnMarkerClickListener { marker ->
                         if (marker.title == "szerenysegem") {
                             true
                         } else {
@@ -207,7 +206,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     val newLatLng = LatLng(location.latitude, location.longitude)
 
                     if (follows) { //a goToMe funkcióban állítható
-                        mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLng(newLatLng)) //a kamera ezáltal követi a felhasználót
+                        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLng(newLatLng)) //a kamera ezáltal követi a felhasználót
                     }
                 }
             }
@@ -224,12 +223,93 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     }
 
     private fun setupObservers() {
+
+        //currentLocation
         viewModel.currentLocation.observe(this) { location ->
             //updateUserMarker(location)
         }
 
+        //nearbyLocation
         viewModel.nearbyLocation.observe(this) { locationName ->
             Toast.makeText(this, "Közel van: $locationName", Toast.LENGTH_SHORT).show()
+        }
+
+        //currentLocationPackData
+        viewModel.currentLocationPackData.observe(this) { currentLocationPackName ->
+        if(currentLocationPackName == null)
+        {
+            supportActionBar?.title = "Üdv, ${viewModel.getUserName()}"
+            val xButton = findViewById<ImageButton>(R.id.xButton)
+            xButton.visibility = View.INVISIBLE
+            mGoogleMap.setInfoWindowAdapter(
+                CustomInfoWindowForGoogleMap(
+                    this@MainScreen,
+                    viewModel.locationPacksData.value!!,
+                    null
+                )
+            )
+
+            for (marker in markers) {
+                marker?.isVisible = true
+            }
+        }
+        else{
+            mGoogleMap.setInfoWindowAdapter(
+                CustomInfoWindowForGoogleMap(
+                    this@MainScreen,
+                    viewModel.locationPacksData.value!!,
+                    currentLocationPackName.name
+                )
+            )
+            supportActionBar?.title = currentLocationPackName?.name
+            val xButton = findViewById<ImageButton>(R.id.xButton)
+            xButton.visibility = View.VISIBLE
+
+            //val matchingItem = locationPackDataList.find { it.name == currentLocationPack }
+            for (marker in markers) {
+                if (!currentLocationPackName?.locations!!.containsKey(marker?.title)) {
+                    marker?.isVisible = false
+                }
+            }
+        }
+        }
+
+        //locationPacksData
+        viewModel.locationPacksData.observe(this) { locationPackList ->
+            for (locationPackData in locationPackList) {
+                for ((name, locationDesc) in locationPackData.locations) {
+                    val marker = mGoogleMap.addMarker(
+                        locationDesc?.markerOptions?.title(name)!!.draggable(false)
+                    )
+                    markers.add(marker)
+                }
+            }
+
+            if (locationPackList != null) {
+                mGoogleMap.setInfoWindowAdapter(
+                    CustomInfoWindowForGoogleMap(
+                        this@MainScreen,
+                        locationPackList,
+                        viewModel.currentLocationPackData.value?.name
+                    )
+                )
+
+                mGoogleMap.setOnInfoWindowClickListener { marker ->
+                    var markersLocationPackData: LocationPackData = LocationPackData()
+                    for (locationPack in locationPackList) {
+                        if (locationPack.locations.containsKey(marker.title.toString())) {
+                            markersLocationPackData = locationPack
+                            break
+                        }
+                    }
+
+                    if (viewModel.currentLocationPackData.value == null) {
+                        showLPDialog(markersLocationPackData, marker, viewModel.locationPacksData.value!!)
+                    } else if (viewModel.currentLocationPackData.value!!.locations.containsKey(marker.title)) {
+                        showLDialog(markersLocationPackData, marker)
+                    }
+                }
+            }
         }
     }
 
@@ -245,32 +325,6 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         }
         return super.onOptionsItemSelected(item)
     }
-
-    private fun observeViewModel() {
-        viewModel.locationPacksData.observe(this) { locationPackList ->
-            for (locationPackData in locationPackList) {
-                for ((name, locationDesc) in locationPackData.locations) {
-                    val marker = mGoogleMap.addMarker(
-                        locationDesc?.markerOptions?.title(name)!!.draggable(false)
-                    )
-                    markers.add(marker)
-                }
-            }
-            viewModel.locationPacksData.observe(this) { locationPacks ->
-                if (locationPacks != null) {
-                    mGoogleMap.setInfoWindowAdapter(
-                        CustomInfoWindowForGoogleMap(
-                            this@MainScreen,
-                            locationPacks.toMutableList(),
-                            currentLocationPack
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-
 
     var isLoaded = false
 
@@ -373,6 +427,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         })
     }
     */
+
     //meghatározza  a jelenlegi pozíciót
     private fun getCurrentLocationUser() {
         //engedély ellenőrzése, ha nincsenek meg, engedélyt kér
@@ -484,7 +539,6 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     }*/
 
     //ráközelít a helyzetemre
-
     fun goToMe(view: View) {
         val goToMeButtonButton: Button = findViewById(R.id.goToMe)
         if (follows) {
@@ -492,7 +546,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             goToMeButtonButton.setText("Követés bekapcsolása")
         } else {
             val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
-            mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f))
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f))
             follows = true;
             goToMeButtonButton.setText("Követés kikapcsolása")
         }
@@ -614,7 +668,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    fun showLPDialog(currentLocationPackData: LocationPackData, marker: Marker) {
+    fun showLPDialog(currentLocationPackData: LocationPackData, marker: Marker, allLocationPackData: MutableList<LocationPackData>) {
         val picture: Bitmap = BitmapStore.loadedBitmaps[currentLocationPackData.name]!!
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.location_pack_dialog)
@@ -627,15 +681,14 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         continueButton.setOnClickListener()
         {
             currentLocationPack = currentLocationPackData.name
-            mGoogleMap?.setInfoWindowAdapter(
+            mGoogleMap.setInfoWindowAdapter(
                 CustomInfoWindowForGoogleMap(
                     this@MainScreen,
-                    locationPackDataList,
+                    allLocationPackData,
                     currentLocationPack
                 )
             )
-            currentLocationPackSet(currentLocationPackData.name)
-            val nonNullableCurrentLocationPack: String = currentLocationPack!!
+            viewModel.currentLocationPackDataSet(currentLocationPackData)
             dialog.dismiss()
             marker.hideInfoWindow()
         }
@@ -739,43 +792,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
     // a currentLocationPack-et Null-ra állítja
     fun currentLocationPackToNull(view: View) {
-        currentLocationPack = null
-        supportActionBar?.title = "Üdv, ${auth.currentUser?.displayName}"
-        val xButton = findViewById<ImageButton>(R.id.xButton)
-        xButton.visibility = View.INVISIBLE
-        mGoogleMap?.setInfoWindowAdapter(
-            CustomInfoWindowForGoogleMap(
-                this@MainScreen,
-                locationPackDataList,
-                currentLocationPack
-            )
-        )
-
-        for (marker in markers) {
-            marker?.isVisible = true
-        }
-    }
-
-    // a currentLocationPack értékét megváltoztatja
-    fun currentLocationPackSet(locationName: String) {
-        currentLocationPack = locationName
-        mGoogleMap?.setInfoWindowAdapter(
-            CustomInfoWindowForGoogleMap(
-                this@MainScreen,
-                locationPackDataList,
-                currentLocationPack
-            )
-        )
-        supportActionBar?.title = currentLocationPack
-        val xButton = findViewById<ImageButton>(R.id.xButton)
-        xButton.visibility = View.VISIBLE
-
-        val matchingItem = locationPackDataList.find { it.name == currentLocationPack }
-        for (marker in markers) {
-            if (!matchingItem?.locations!!.containsKey(marker?.title)) {
-                marker?.isVisible = false
-            }
-        }
+        viewModel.currentLocationPackToNull()
     }
 
     //usersRating és completionCount átírása Firestore-ban, a rating frissítése realtime database-ben

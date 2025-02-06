@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.HungaryGo.LocationDescription
 import com.example.HungaryGo.LocationPackData
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.database.DataSnapshot
@@ -12,10 +13,12 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-class LocationRepository(private val db: FirebaseDatabase) {
+class LocationRepository(private val db: FirebaseDatabase, private val fusedLocationProviderClient: FusedLocationProviderClient) {
 
-    private val _locationPacks = MutableLiveData<List<LocationPackData>>()
-    val locationPacks: LiveData<List<LocationPackData>> get() = _locationPacks
+    private val _locationPacks = MutableLiveData<MutableList<LocationPackData>>()
+    val locationPacks: LiveData<MutableList<LocationPackData>> get() = _locationPacks
+
+
 
     fun fetchLocationPacks() {
         val locationPacksRef = db.getReference("location packs")
