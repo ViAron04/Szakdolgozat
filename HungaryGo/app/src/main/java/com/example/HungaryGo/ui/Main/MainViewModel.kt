@@ -1,18 +1,29 @@
 package com.example.HungaryGo.ui.Main
 
 import android.location.Location
+import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.R
 import com.example.HungaryGo.data.repository.LocationRepository
+import com.example.HungaryGo.data.repository.MainRepository
 import com.example.HungaryGo.data.repository.UserRepository
+import com.google.android.gms.maps.model.Marker
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class MainViewModel(private val locationRepository: LocationRepository): ViewModel() {
     private val userRepository: UserRepository = UserRepository()
+    private val mainRepository: MainRepository = MainRepository()
 
     val locationPacksData: LiveData<MutableList<LocationPackData>> = locationRepository.locationPacks
 
@@ -39,5 +50,11 @@ class MainViewModel(private val locationRepository: LocationRepository): ViewMod
 
     fun currentLocationPackToNull() {
         _currentLocationPackData.value = null
+    }
+
+    fun updateLocationInFirestore(markerTitle: String){
+        viewModelScope.launch {
+            mainRepository.updateLocationInFirestore(currentLocationPackData.value!!, markerTitle)
+        }
     }
 }

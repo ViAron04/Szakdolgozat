@@ -175,9 +175,8 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     }
 
                     //a jelenleg kiválasztott pálya helyszínei
-                    val currentLocationPackList =
-                        locationPackDataList.find { it.name == currentLocationPack }
-                    if (currentLocationPackList != null) {
+
+                    viewModel.currentLocationPackData.value?.let { currentLocationPackList ->
                         for (currentLocationPack in currentLocationPackList.locations) {
                             val distance = FloatArray(1)
                             Location.distanceBetween(
@@ -725,8 +724,8 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
         continueButton.setOnClickListener {
             if (lQuestionAnswer.text.toString() == currentLocationData?.answer || currentLocationData?.question == null) {
+                viewModel.updateLocationInFirestore(marker.title.toString())
                 lifecycleScope.launch {
-                    updateLocationInFirestore(currentLocationPackData, marker.title.toString())
                     checkLocations()
                     dialog.dismiss()
                     marker.hideInfoWindow()
@@ -741,50 +740,6 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         }
         dialog.show()
     }
-
-    private suspend fun updateLocationInFirestore(currentLocationPackData: LocationPackData, markerTitle: String) = withContext(Dispatchers.IO) {
-        try {
-
-
-            val dbfirestore = FirebaseFirestore.getInstance()
-            val currentUserEmail = auth.currentUser?.email.toString()
-            val userRef =
-                dbfirestore.collection("userpoints").document(currentUserEmail)
-                    .collection("inprogress").document(currentLocationPack.toString())
-
-            // Dokumentum lekérése
-            val document = userRef.get().await()
-            //A pálya végigvitelének mennyisége és a felhasználó értékelése róla
-            if (!document.contains("usersRating")) {
-                val generalData = mutableMapOf<String, Any>()
-                generalData["completionCount"] = 0
-                generalData["usersRating"] = 0
-
-                userRef.set(generalData, SetOptions.merge()).await()
-            }
-            //Minden helyszín a pályában legyen nulla
-            if (!document.contains("locations")) {
-                val updatedLocations = mutableMapOf<String, Int>()
-                for (location in currentLocationPackData.locations) {
-                    updatedLocations[location.key] = 0
-                }
-                val locationData = mapOf("locations" to updatedLocations)
-                userRef.set(locationData, SetOptions.merge()).await()
-            }
-
-            //aktuális helyszín-t egyre kell állítani
-            val locationData = mapOf(
-                "locations" to mapOf(markerTitle to 1)
-            )
-            userRef.set(locationData, SetOptions.merge()).await()
-
-
-        } catch (e: Exception) {
-            Log.e("Firestore", "Hiba történt: ", e)
-        }
-    }
-
-
 
     fun closeInfoWindow(view: View) {
 
