@@ -24,16 +24,15 @@ import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.viewModels
-import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.example.HungaryGo.LocationDescription
 import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.R
+import com.example.HungaryGo.data.repository.LocationRepository
 import com.example.HungaryGo.databinding.ActivityMainScreenBinding
 import com.example.HungaryGo.ui.AdventureList.AdventureListScreen
 import com.example.HungaryGo.ui.Maker.MakerScreen
@@ -57,11 +56,8 @@ import com.google.android.gms.tasks.Tasks
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.ktx.Firebase
@@ -80,7 +76,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
 
 
-    var mGoogleMap: GoogleMap? = null
+    //var mGoogleMap: GoogleMap? = null
 
     private val FINE_PERMISSION_CODE = 1
     private lateinit var currentLocation: Location
@@ -106,15 +102,20 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
     var locationPackDataList: MutableList<LocationPackData> = mutableListOf()
 
-    val markers = mutableListOf<Marker?>()
 
 
     private lateinit var binding: ActivityMainScreenBinding
     private lateinit var drawerLayout: DrawerLayout
-    private val viewModel: MainViewModel by viewModels()
+    //private val viewModel: MainViewModel by viewModels()
 
     private var currentMarker: Marker? = null
     private var follows: Boolean = false
+
+
+    private lateinit var viewModel: MainViewModel
+
+    private lateinit var mGoogleMap: GoogleMap
+    private val markers = mutableListOf<Marker?>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -122,10 +123,19 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         binding = ActivityMainScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        val locationRepository = LocationRepository(FirebaseDatabase.getInstance())
+
+        // ViewModel létrehozása Factoryval
+        viewModel = ViewModelProvider(this, MainViewModelFactory(locationRepository))
+            .get(MainViewModel::class.java)
+
         setupToolbar()
         setupNavigationDrawer()
         setupObservers()
 
+        viewModel.loadLocationPacks()
+        observeViewModel()
 
         auth = Firebase.auth
 
@@ -137,7 +147,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
         var currentNearbyLocation: String? = null
 
-        getLocationPacks()
+        //getLocationPacks()
 
         locationCallback1 = object : LocationCallback() {
 
@@ -236,8 +246,35 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         return super.onOptionsItemSelected(item)
     }
 
+    private fun observeViewModel() {
+        viewModel.locationPacksData.observe(this) { locationPackList ->
+            for (locationPackData in locationPackList) {
+                for ((name, locationDesc) in locationPackData.locations) {
+                    val marker = mGoogleMap.addMarker(
+                        locationDesc?.markerOptions?.title(name)!!.draggable(false)
+                    )
+                    markers.add(marker)
+                }
+            }
+            viewModel.locationPacksData.observe(this) { locationPacks ->
+                if (locationPacks != null) {
+                    mGoogleMap.setInfoWindowAdapter(
+                        CustomInfoWindowForGoogleMap(
+                            this@MainScreen,
+                            locationPacks.toMutableList(),
+                            currentLocationPack
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+
+
     var isLoaded = false
 
+    /*
     //markerek lehelyezése, az infowindowra történő kattintás kezelése
     private fun getLocationPacks() {
         //belép a location packsba
@@ -335,7 +372,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             }
         })
     }
-
+    */
     //meghatározza  a jelenlegi pozíciót
     private fun getCurrentLocationUser() {
         //engedély ellenőrzése, ha nincsenek meg, engedélyt kér
@@ -694,9 +731,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    fun markerReload(view: View) {
-        getLocationPacks()
-    }
+
 
     fun closeInfoWindow(view: View) {
 
