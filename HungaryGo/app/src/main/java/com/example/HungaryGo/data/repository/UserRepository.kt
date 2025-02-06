@@ -60,4 +60,8 @@ class UserRepository {
     }
 
     fun getCurrentUser() = auth.currentUser
+
+    fun getUserName(): String {
+        return auth.currentUser?.displayName.toString()
+    }
 }

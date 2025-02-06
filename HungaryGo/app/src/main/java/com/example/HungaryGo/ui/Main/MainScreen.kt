@@ -24,6 +24,7 @@ import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
@@ -33,6 +34,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.HungaryGo.LocationDescription
 import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.R
+import com.example.HungaryGo.databinding.ActivityMainScreenBinding
 import com.example.HungaryGo.ui.AdventureList.AdventureListScreen
 import com.example.HungaryGo.ui.Maker.MakerScreen
 import com.example.HungaryGo.ui.Options.OptionsScreen
@@ -104,41 +106,28 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
     var locationPackDataList: MutableList<LocationPackData> = mutableListOf()
 
-    var follows: Boolean = false
-
     val markers = mutableListOf<Marker?>()
 
+
+    private lateinit var binding: ActivityMainScreenBinding
     private lateinit var drawerLayout: DrawerLayout
+    private val viewModel: MainViewModel by viewModels()
+
+    private var currentMarker: Marker? = null
+    private var follows: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main_screen)
+        binding = ActivityMainScreenBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setupToolbar()
+        setupNavigationDrawer()
+        setupObservers()
+
 
         auth = Firebase.auth
-
-        //sidemenu
-
-        drawerLayout = findViewById(R.id.mapScreen)
-        //val navView: NavigationView = findViewById(R.id.nav_view)
-
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-
-        //toolbar felirata
-        supportActionBar?.title = "Üdv, ${auth.currentUser?.displayName}"
-
-        val navigationView = findViewById<NavigationView>(R.id.nav_view)
-        navigationView.setNavigationItemSelectedListener(this)
-
-        val toggle =
-            ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open, R.string.close)
-
-        drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
-
-        //sidemenu vége
-
 
         fusedLocationClient =
             LocationServices.getFusedLocationProviderClient(this) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
@@ -213,6 +202,31 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 }
             }
         }
+    }
+
+    private fun setupNavigationDrawer() {
+        drawerLayout = binding.mapScreen
+        val navigationView = binding.navView
+        navigationView.setNavigationItemSelectedListener(this)
+        val toggle = ActionBarDrawerToggle(this, drawerLayout, binding.toolbar, R.string.open, R.string.close)
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+    }
+
+    private fun setupObservers() {
+        viewModel.currentLocation.observe(this) { location ->
+            //updateUserMarker(location)
+        }
+
+        viewModel.nearbyLocation.observe(this) { locationName ->
+            Toast.makeText(this, "Közel van: $locationName", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun setupToolbar() {
+        val toolbar = binding.toolbar
+        setSupportActionBar(toolbar)
+        supportActionBar?.title = "Üdv, ${viewModel.getUserName()}"
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
