@@ -592,6 +592,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         val lpDescription = dialog.findViewById<TextView>(R.id.lpDescription)
         val continueButton = dialog.findViewById<Button>(R.id.continueButton)
         val lpLocationCount = dialog.findViewById<TextView>(R.id.lpLocationCount)
+        val lpRating = dialog.findViewById<TextView>(R.id.lpRating)
 
         continueButton.setOnClickListener()
         {
@@ -610,6 +611,9 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         lpImage.setImageBitmap(picture)
         lpDescription.text = currentLocationPackData.description
         lpLocationCount.text = "Helyszínek száma: ${currentLocationPackData.locations.count()}"
+        if(currentLocationPackData.rating != 0.0) lpRating.text = "Értékelés: ${currentLocationPackData.rating}"
+        else lpRating.text = "Még nem érkezett értékelés"
+
         dialog.show()
     }
 

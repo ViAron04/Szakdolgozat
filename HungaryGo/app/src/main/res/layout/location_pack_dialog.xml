@@ -55,6 +55,19 @@
                 android:ellipsize="end"
                 tools:text="Ez egy minta szöveg."  />
 
+            <TextView
+                android:id="@+id/lpRating"
+                android:scrollbars="vertical"
+                android:textColor="@color/grey"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="20dp"
+                android:gravity="start"
+                android:ellipsize="end"
+                tools:text="Ez egy minta szöveg."  />
+
             <Button
                 android:id="@+id/continueButton"
                 android:onClick="closeInfoWindow"
