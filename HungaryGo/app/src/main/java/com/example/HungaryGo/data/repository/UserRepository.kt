@@ -12,7 +12,7 @@ import kotlinx.coroutines.tasks.await
 
 class UserRepository {
     private val auth: FirebaseAuth = Firebase.auth
-    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val dbFirestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     suspend fun userRegister(username: String, email: String, password: String): Result<String> {
         return try {
@@ -28,7 +28,7 @@ class UserRepository {
             val userMap = hashMapOf(
                 "email" to email
             )
-            db.collection("userpoints").document(email).set(userMap)
+            dbFirestore.collection("userpoints").document(email).set(userMap)
 
             Result.success("Sikeres regisztráció")
 
@@ -63,5 +63,20 @@ class UserRepository {
 
     fun getUserName(): String {
         return auth.currentUser?.displayName.toString()
+    }
+
+    suspend fun getUserPrevRating(currentLocationPackName: String): Long {
+        val currentUserEmail = auth.currentUser?.email ?: return 0
+        val documentRef = dbFirestore.collection("userpoints")
+            .document(currentUserEmail)
+            .collection("inprogress")
+            .document(currentLocationPackName)
+
+        return try {
+            val docSnapshot = documentRef.get().await() // Coroutine megvárja az eredményt
+            docSnapshot.getLong("usersRating") ?: 0
+        } catch (e: Exception) {
+            0
+        }
     }
 }

@@ -4,6 +4,7 @@ import android.location.Location
 import android.util.Log
 import android.view.View
 import android.widget.ImageButton
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -33,6 +34,9 @@ class MainViewModel(private val locationRepository: LocationRepository): ViewMod
     private val _currentLocation = MutableLiveData<Location>()
     val currentLocation: LiveData<Location> get() = _currentLocation
 
+    private val _levelCompleted = MutableLiveData<Result<Boolean>>()
+    val levelCompleted: LiveData<Result<Boolean>> get() = _levelCompleted
+
     private val _nearbyLocation = MutableLiveData<String>()
     val nearbyLocation: LiveData<String> get() = _nearbyLocation
 
@@ -52,9 +56,19 @@ class MainViewModel(private val locationRepository: LocationRepository): ViewMod
         _currentLocationPackData.value = null
     }
 
+    fun getUserPrevRating(): Long{
+        var number: Long = 0
+        viewModelScope.launch {
+            number = userRepository.getUserPrevRating(currentLocationPackData.value!!.name)
+        }
+        return number
+    }
+
     fun updateLocationInFirestore(markerTitle: String){
         viewModelScope.launch {
             mainRepository.updateLocationInFirestore(currentLocationPackData.value!!, markerTitle)
+            val result = mainRepository.checkLocationPackCompletion(currentLocationPackData.value!!.name)
+            _levelCompleted.value = result
         }
     }
 }
