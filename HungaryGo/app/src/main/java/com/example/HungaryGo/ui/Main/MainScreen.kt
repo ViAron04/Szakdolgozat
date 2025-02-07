@@ -30,6 +30,7 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.R
 import com.example.HungaryGo.data.repository.LocationRepository
@@ -62,10 +63,12 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import java.text.Normalizer
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -337,106 +340,6 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
     var isLoaded = false
 
-    /*
-    //markerek lehelyezése, az infowindowra történő kattintás kezelése
-    private fun getLocationPacks() {
-        //belép a location packsba
-        val locationPacksRef = db.getReference("location packs")
-
-        locationPacksRef.addListenerForSingleValueEvent(object :
-            ValueEventListener { //csak egyszer kéri el az adatokat az adatbázisból
-            override fun onDataChange(snapshot: DataSnapshot) {
-
-                if (snapshot.exists()) { //létezik-e az adat
-
-                    for (buildingSnapshotLP in snapshot.children) { //Pl. Pannon Egyetem, Vasszécseny kör
-
-                        val locationPackData = LocationPackData()
-
-                        locationPackData.name = buildingSnapshotLP.key.toString()
-
-                        for (buildingSnapshot in buildingSnapshotLP.children) {
-                            if (buildingSnapshot.key == "rating") {
-                                locationPackData.rating =
-                                    buildingSnapshot.value.toString().toDouble()
-                            } else if (buildingSnapshot.key == "description") {
-                                locationPackData.description = buildingSnapshot.value.toString()
-                            } else if (buildingSnapshot.key == "completionNumber") {
-                                locationPackData.completionNumber =
-                                    buildingSnapshot.value.toString().toInt()
-                            } else {
-                                val buildingMap = buildingSnapshot.value as Map<String, Any>
-                                //val latitude = buildingMap["latitude"] as Double
-                                //val longitude = buildingMap["longitude"] as Double
-                                val markerOptions = MarkerOptions()
-                                    .position(
-                                        LatLng(
-                                            buildingMap["latitude"] as Double,
-                                            buildingMap["longitude"] as Double
-                                        )
-                                    )
-                                val description = buildingMap["Description"] as String?
-                                val name = buildingSnapshot.key.toString()
-                                var question = null as String?
-                                var answer = null as String?
-                                if (buildingMap.containsKey("Question")) {
-                                    question = buildingMap["Question"] as String?
-                                    answer = buildingMap["Answer"] as String?
-                                }
-
-                                locationPackData.locations[name] = LocationDescription(
-                                    markerOptions,
-                                    description = description,
-                                    question = question,
-                                    answer = answer
-                                )
-
-                                val marker = mGoogleMap?.addMarker(
-                                    markerOptions
-                                        .title(name)
-                                        .draggable(false)
-                                )
-                                markers.add(marker)
-                            }
-                        }
-                        locationPackDataList.add(locationPackData)
-                    }
-                    mGoogleMap?.setInfoWindowAdapter(
-                        CustomInfoWindowForGoogleMap(
-                            this@MainScreen,
-                            locationPackDataList,
-                            currentLocationPack
-                        )
-                    )
-                    isLoaded = true;
-                } else {
-                    println("Nem találtam helyszíneket az adatbázisban")
-                }
-
-                //infowindowra kattintás
-                mGoogleMap?.setOnInfoWindowClickListener { marker ->
-                    var currentLocationPackData: LocationPackData = LocationPackData()
-                    for (locationPack in locationPackDataList) {
-                        if (locationPack.locations.containsKey(marker.title.toString())) {
-                            currentLocationPackData = locationPack
-                        }
-                    }
-
-                    if (currentLocationPack == null) {
-                        showLPDialog(currentLocationPackData, marker)
-                    } else if (currentLocationPackData.locations.containsKey(marker.title)) {
-                        showLDialog(currentLocationPackData, marker)
-                    }
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) { //hibakezelés
-                println("Error getting data: ${error.message}")
-            }
-        })
-    }
-    */
-
     //meghatározza  a jelenlegi pozíciót
     private fun getCurrentLocationUser() {
         //engedély ellenőrzése, ha nincsenek meg, engedélyt kér
@@ -639,7 +542,20 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 dialog.setCanceledOnTouchOutside(false)
                 val finishedLocationPack = dialog.findViewById<TextView>(R.id.finishedLocationPack)
                 val continueButton = dialog.findViewById<Button>(R.id.continueButton)
+                val rewardImg = dialog.findViewById<ImageView>(R.id.rewardImg)
                 val ratingBar = dialog.findViewById<RatingBar>(R.id.ratingBar)
+
+
+                val currentLocationPackUri = removeAccents(viewModel.currentLocationPackData.value!!.name.lowercase().replace(' ','_'))
+                val storageRef = FirebaseStorage.getInstance().reference.child("location_packs_rewards/$currentLocationPackUri.png")
+
+                storageRef.downloadUrl.addOnSuccessListener { uri ->
+                    Glide.with(this)
+                        .load(uri)
+                        .into(rewardImg) // ahol imageView az ImageView ID-ja
+                }.addOnFailureListener {
+                    Toast.makeText(this, "Hiba történt a kép betöltésekor", Toast.LENGTH_SHORT).show()
+                }
 
                 lifecycleScope.launch {
                     ratingBar.rating = userRepository.getUserPrevRating(viewModel.currentLocationPackData.value!!.name)
@@ -743,35 +659,14 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
     }
 
+
+    fun removeAccents(input: String?): String {
+        val normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
+        return normalized.replace(Regex("\\p{Mn}"), "")
+    }
+
     // a currentLocationPack-et Null-ra állítja
     fun currentLocationPackToNull(view: View) {
         viewModel.currentLocationPackToNull()
     }
-
-
-
-
-    /*
-    fun checkLocationPackCompletion(currentLocationPackParam: String, callback: (Boolean) -> Unit) {
-        val dbfirestore = FirebaseFirestore.getInstance()
-        val currentUserEmail = auth.currentUser?.email.toString()
-        val documentRef = dbfirestore.collection("userpoints")
-            .document(currentUserEmail)
-            .collection("inprogress")
-            .document(currentLocationPackParam)
-
-        documentRef.get()
-            .addOnSuccessListener { docSnapshot ->
-                if (docSnapshot.exists()) {
-                    val locations = docSnapshot.get("locations") as? Map<String, Any>
-                    val allOne = locations?.all { (_, value) -> value == 1L || value == 1.0 } ?: false
-                    callback(allOne)
-                } else {
-                    callback(false)
-                }
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }*/
 }
