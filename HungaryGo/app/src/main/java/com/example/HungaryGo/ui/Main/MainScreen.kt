@@ -86,7 +86,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback1: LocationCallback
-    private lateinit var auth: FirebaseAuth
+
 
     object BitmapStore {
         public val loadedBitmaps = mutableMapOf<String?, android.graphics.Bitmap>()
@@ -141,7 +141,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         viewModel.loadLocationPacks()
         getCurrentLocationUser()
 
-        auth = Firebase.auth
+
 
         fusedLocationClient =
             LocationServices.getFusedLocationProviderClient(this) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
@@ -523,7 +523,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             }
 
             R.id.kijelentkezes -> {
-                Firebase.auth.signOut()
+                userRepository.userSignOut()
                 startActivity(Intent(this@MainScreen, SignInScreen::class.java))
             }
         }
@@ -618,45 +618,58 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     }
 
     fun showLDialog(currentLocationPackData: LocationPackData, marker: Marker) {
-        val dialog = Dialog(this)
-        dialog.setContentView(R.layout.location_dialog)
-        dialog.setCancelable(true)
-        val lImage = dialog.findViewById<ImageView>(R.id.lImage)
-        val lName = dialog.findViewById<TextView>(R.id.lName)
-        val lDescription = dialog.findViewById<TextView>(R.id.lDescription)
-        val lQuestion = dialog.findViewById<TextView>(R.id.lQuestion)
-        val lQuestionAnswer = dialog.findViewById<EditText>(R.id.lQuestionAnswer)
-        val continueButton = dialog.findViewById<Button>(R.id.continueButton)
-        val currentLocationData = currentLocationPackData.locations[marker.title]
+        val distance = FloatArray(1)
+        Location.distanceBetween(
+            marker.position.latitude,
+            marker.position.longitude, //megnézi, mekkora a táv a markerek és a játékos között
+            currentLocation.latitude,
+            currentLocation.longitude,
+            distance
+        )
 
-        lName.text = marker.title
-        if (currentLocationData?.description != null) {
-            lDescription.text = currentLocationData.description
-        }
+        //TODO Kivenni a kommentet
+        //if (distance[0] < 30) {
+            val dialog = Dialog(this)
+            dialog.setContentView(R.layout.location_dialog)
+            dialog.setCancelable(true)
+            val lImage = dialog.findViewById<ImageView>(R.id.lImage)
+            val lName = dialog.findViewById<TextView>(R.id.lName)
+            val lDescription = dialog.findViewById<TextView>(R.id.lDescription)
+            val lQuestion = dialog.findViewById<TextView>(R.id.lQuestion)
+            val lQuestionAnswer = dialog.findViewById<EditText>(R.id.lQuestionAnswer)
+            val continueButton = dialog.findViewById<Button>(R.id.continueButton)
+            val currentLocationData = currentLocationPackData.locations[marker.title]
 
-        if (currentLocationData?.question != null) {
-            val params = lQuestion.layoutParams as ViewGroup.MarginLayoutParams
-            params.topMargin = 20
-            lQuestion.layoutParams = params
-            lQuestion.text = currentLocationData.question
-            lQuestionAnswer.visibility = View.VISIBLE
-        }
-
-        continueButton.setOnClickListener {
-            if (lQuestionAnswer.text.toString() == currentLocationData?.answer || currentLocationData?.question == null) {
-                viewModel.updateLocationInFirestore(marker.title.toString())
-                dialog.dismiss()
-                marker.hideInfoWindow()
-
-            } else {
-                Toast.makeText(
-                    applicationContext,
-                    "Rossz válasz, a helyszín teljesítéséhez próbáld újra!",
-                    Toast.LENGTH_SHORT
-                ).show()
+            lName.text = marker.title
+            if (currentLocationData?.description != null) {
+                lDescription.text = currentLocationData.description
             }
-        }
-        dialog.show()
+
+            if (currentLocationData?.question != null) {
+                val params = lQuestion.layoutParams as ViewGroup.MarginLayoutParams
+                params.topMargin = 20
+                lQuestion.layoutParams = params
+                lQuestion.text = currentLocationData.question
+                lQuestionAnswer.visibility = View.VISIBLE
+            }
+
+            continueButton.setOnClickListener {
+                if (lQuestionAnswer.text.toString() == currentLocationData?.answer || currentLocationData?.question == null) {
+                    viewModel.updateLocationInFirestore(marker.title.toString())
+                    dialog.dismiss()
+                    marker.hideInfoWindow()
+
+                } else {
+                    Toast.makeText(
+                        applicationContext,
+                        "Rossz válasz, a helyszín teljesítéséhez próbáld újra!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            dialog.show()
+        //}
+
     }
 
     fun closeInfoWindow(view: View) {

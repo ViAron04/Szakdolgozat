@@ -1,6 +1,10 @@
 package com.example.HungaryGo.data.repository
 
+import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
+import android.widget.Toast
+import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -8,7 +12,11 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import java.text.Normalizer
 
 class UserRepository {
     private val auth: FirebaseAuth = Firebase.auth
@@ -78,5 +86,53 @@ class UserRepository {
         } catch (e: Exception) {
             0
         }
+    }
+
+    fun userSignOut(){
+        auth.signOut()
+    }
+
+    suspend fun getCompletedLevelsReward(context: Context):Result<MutableMap<String?, android.graphics.Bitmap>>
+    {
+        return try {
+            val rewardBitmaps= mutableMapOf<String?, Bitmap>()
+            val currentUserEmail = auth.currentUser?.email
+            val documentRef = dbFirestore.collection("userpoints")
+                .document(currentUserEmail!!)
+                .collection("inprogress")
+
+            val querySnapshot = documentRef.get().await()
+
+            for (document in querySnapshot.documents) {
+                if((document.getLong("completionCount") ?: 0) > 0)
+                {
+                    val currentLocationPackUri = removeAccents(document.id.lowercase().replace(' ','_'))
+                    val storageRef = FirebaseStorage.getInstance().reference.child("location_packs_rewards/$currentLocationPackUri.png")
+
+                    try {
+                        val uri = storageRef.downloadUrl.await() // Várunk az URL-re
+                        val bitmap = withContext(Dispatchers.IO) {
+                            Glide.with(context)
+                                .asBitmap()
+                                .load(uri)
+                                .submit()
+                                .get() // A kép betöltése blokkoló módon
+                        }
+                        rewardBitmaps[document.id] = bitmap
+                    } catch (e: Exception) {
+                        Log.e("UserRepository", "Hiba történt a kép betöltésekor", e)
+                    }
+                }
+            }
+            Result.success(rewardBitmaps)
+        }catch (e: Exception) {
+            Log.e("UserRepository", "Hiba a jutalmak betöltésekor", e)
+            Result.failure(e)
+        }
+    }
+
+    fun removeAccents(input: String?): String {
+        val normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
+        return normalized.replace(Regex("\\p{Mn}"), "")
     }
 }
