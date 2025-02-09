@@ -3,6 +3,7 @@ package com.example.HungaryGo.ui.GloryWall
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.ListView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -30,4 +31,9 @@ class GloryWallScreen : AppCompatActivity() {
 
         viewModel.getCompletedLevelsReward(this)
     }
+
+    fun backToMainScreen(view: View) {
+        startActivity(Intent(this@GloryWallScreen, MainScreen::class.java))
+    }
+
 }

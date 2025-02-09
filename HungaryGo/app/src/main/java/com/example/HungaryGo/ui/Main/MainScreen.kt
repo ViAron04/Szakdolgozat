@@ -488,7 +488,9 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             R.id.kalandKeres -> {
                 //a pályák adatainak küldése
                 val intent = Intent(this@MainScreen, AdventureListScreen::class.java)
-                intent.putExtra("locationPackList", ArrayList(viewModel.locationPacksData.value))
+
+                val locationPackList = viewModel.locationPacksData.value ?: mutableListOf()
+                intent.putExtra("locationPackList", ArrayList(locationPackList))
 
                 startActivity(intent)
             }
@@ -611,7 +613,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         lpImage.setImageBitmap(picture)
         lpDescription.text = currentLocationPackData.description
         lpLocationCount.text = "Helyszínek száma: ${currentLocationPackData.locations.count()}"
-        if(currentLocationPackData.rating != 0.0) lpRating.text = "Értékelés: ${currentLocationPackData.rating}"
+        if(currentLocationPackData.rating != 0.0) lpRating.text = "Értékelés: %.2f".format(currentLocationPackData.rating)
         else lpRating.text = "Még nem érkezett értékelés"
 
         dialog.show()

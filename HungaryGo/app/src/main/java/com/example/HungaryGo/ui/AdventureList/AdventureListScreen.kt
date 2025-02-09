@@ -4,8 +4,18 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import androidx.lifecycle.ViewModelProvider
 import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.R
+import com.example.HungaryGo.data.repository.LocationRepository
+import com.example.HungaryGo.ui.Main.MainViewModel
+import com.example.HungaryGo.ui.Main.MainViewModelFactory
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.firebase.database.FirebaseDatabase
+
+private lateinit var viewModel: MainViewModel
+private lateinit var fusedLocationClient: FusedLocationProviderClient
 
 class AdventureListScreen : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,8 +26,11 @@ class AdventureListScreen : AppCompatActivity() {
         val listData: MutableList<String> = mutableListOf()
         val adapter: ArrayAdapter<String>
 
+
+
         val intent = intent
         val locationPackDataList = intent.getSerializableExtra("locationPackList") as? ArrayList<LocationPackData>
+            ?: arrayListOf()
 
 
         if (locationPackDataList != null) {
@@ -32,9 +45,5 @@ class AdventureListScreen : AppCompatActivity() {
         val listView: ListView = findViewById(R.id.lista)
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, listData)
        listView.adapter = adapter
-
-
-
-
     }
 }

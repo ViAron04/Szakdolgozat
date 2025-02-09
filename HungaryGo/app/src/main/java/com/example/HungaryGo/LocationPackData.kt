@@ -13,6 +13,7 @@ data class LocationPackData(
 // a serializable az intentként törénő küldéshez kell
 
 data class LocationDescription (
+    @Transient
     var markerOptions: MarkerOptions? = null,
     var description: String? = null,
     var question: String? = null,

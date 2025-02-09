@@ -4,14 +4,33 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".ui.GloryWall.GloryWallScreen"
     android:background="@drawable/gigantikusparafatabla">
 
+    <ImageView
+        android:layout_marginTop="25dp"
+        android:layout_marginBottom="25dp"
+        android:layout_width="300dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:background="@drawable/jutalmaim"
+        />
+
+
     <ListView
         android:id="@+id/rewardList"
-        android:layout_gravity="center"
         android:layout_width="400dp"
-        android:layout_height="wrap_content"/>
+        android:layout_height="513dp"
+        android:layout_gravity="center" />
 
-
+    <ImageView
+        android:onClick="backToMainScreen"
+        android:layout_gravity="left"
+        android:layout_marginLeft="10dp"
+        android:src="@drawable/redarrow"
+        android:layout_marginTop="10dp"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        />
 </LinearLayout>
