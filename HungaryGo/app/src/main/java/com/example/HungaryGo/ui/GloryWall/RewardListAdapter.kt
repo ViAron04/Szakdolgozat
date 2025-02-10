@@ -39,7 +39,14 @@ class RewardListAdapter(private val context: Context, private var bitmapList: Mu
         val reward2: ImageView = view.findViewById(R.id.reward2)
         val (bitmap1, bitmap2) = getItem(position) ?: Pair(null, null)
         reward1.setImageBitmap(bitmap1)
-        reward2.setImageBitmap(bitmap2)
+        if(bitmap2 != null)
+        {
+            reward2.setImageBitmap(bitmap2)
+        }
+        else
+        {
+            reward2.visibility = View.INVISIBLE
+        }
 
         return view
     }

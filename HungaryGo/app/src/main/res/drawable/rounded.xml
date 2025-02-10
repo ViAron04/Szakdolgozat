@@ -1,0 +1,17 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Háttérszín -->
+    <solid android:color="#FFFFFF" />
+
+    <!-- Lekerekített sarkok -->
+    <corners android:radius="25dp" />
+
+    <!-- Opcionálisan beállítható szegély -->
+    <!--
+    <stroke
+        android:width="2dp"
+        android:color="#CCCCCC" />
+    -->
+
+</shape>
