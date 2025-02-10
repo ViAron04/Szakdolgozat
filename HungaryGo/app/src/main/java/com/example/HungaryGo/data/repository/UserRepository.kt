@@ -135,4 +135,29 @@ class UserRepository {
         val normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
         return normalized.replace(Regex("\\p{Mn}"), "")
     }
+
+    fun isLocationPackDone(
+        currentLocationPackName: String,
+        callback: (Boolean) -> Unit
+    ) {
+        val currentUserEmail = auth.currentUser?.email
+        if (currentUserEmail == null) {
+            callback(false)
+            return
+        }
+
+        val documentRef = dbFirestore.collection("userpoints")
+            .document(currentUserEmail)
+            .collection("inprogress")
+            .document(currentLocationPackName)
+
+        documentRef.get()
+            .addOnSuccessListener { docSnapshot ->
+                val isDone = (docSnapshot.getLong("completionCount") ?: 0) > 0
+                callback(isDone)
+            }
+            .addOnFailureListener {
+                callback(false)
+            }
+    }
 }

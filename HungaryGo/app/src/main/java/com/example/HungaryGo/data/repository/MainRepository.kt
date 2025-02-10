@@ -21,6 +21,7 @@ class MainRepository() {
     private val auth: FirebaseAuth = Firebase.auth
     private val dbFirestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
+
     suspend fun updateLocationInFirestore(currentLocationPackData: LocationPackData, markerTitle: String)
     {
         try {
@@ -40,6 +41,7 @@ class MainRepository() {
 
                 userRef.set(generalData, SetOptions.merge()).await()
             }
+
             //Minden helyszín a pályában legyen nulla
             if (!document.contains("locations")) {
                 val updatedLocations = mutableMapOf<String, Int>()
@@ -109,7 +111,6 @@ class MainRepository() {
                     val currentCompletionCount = docSnapshot.getLong("completionCount") ?: 0
                     val currentUsersRating = docSnapshot.getDouble("usersRating")
 
-                    // Use Tasks.await() for Firebase operations
                     Tasks.await(documentRef.update("completionCount", currentCompletionCount + 1))
 
                     val database: DatabaseReference = FirebaseDatabase.getInstance().reference
@@ -151,6 +152,29 @@ class MainRepository() {
             } catch (e: Exception) {
                 Log.e("Firestore", "Hiba történt: ", e)
             }
+        }
+    }
+
+    suspend fun restartLevel(currentLocationPackName: String){
+        try {
+            val currentUserEmail = auth.currentUser?.email
+
+            val documentRef = dbFirestore.collection("userpoints")
+                .document(currentUserEmail!!)
+                .collection("inprogress")
+                .document(currentLocationPackName)
+
+            val documentSnapshot = documentRef.get().await()
+            val locationsMap = documentSnapshot.get("locations") as? Map<String, Any>
+
+            //minden értéket nullára állít
+            val updatedLocationsMap = locationsMap!!.mapValues { 0 }
+
+            //firestore véglegesítés
+            documentRef.update("locations", updatedLocationsMap).await()
+
+        } catch (e: Exception) {
+            Log.e("MainRepository", "Hiba történt: ", e)
         }
     }
 }

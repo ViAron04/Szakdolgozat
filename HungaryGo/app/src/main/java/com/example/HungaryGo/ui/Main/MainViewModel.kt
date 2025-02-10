@@ -14,13 +14,8 @@ import com.example.HungaryGo.R
 import com.example.HungaryGo.data.repository.LocationRepository
 import com.example.HungaryGo.data.repository.MainRepository
 import com.example.HungaryGo.data.repository.UserRepository
-import com.google.android.gms.maps.model.Marker
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
-import kotlinx.coroutines.Dispatchers
+import com.google.protobuf.Internal.BooleanList
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 
 class MainViewModel(private val locationRepository: LocationRepository): ViewModel() {
     private val userRepository: UserRepository = UserRepository()
@@ -64,11 +59,27 @@ class MainViewModel(private val locationRepository: LocationRepository): ViewMod
         return number
     }
 
+    fun isLocationpackDone(
+        currentLocationpackName: String,
+        callback: (Boolean) -> Unit
+    ) {
+        userRepository.isLocationPackDone(currentLocationpackName) { result ->
+            callback(result)
+        }
+    }
+
     fun updateLocationInFirestore(markerTitle: String){
         viewModelScope.launch {
             mainRepository.updateLocationInFirestore(currentLocationPackData.value!!, markerTitle)
             val result = mainRepository.checkLocationPackCompletion(currentLocationPackData.value!!.name)
             _levelCompleted.value = result
+        }
+    }
+
+    fun restartLevel(currentLocationPackName: String){
+        viewModelScope.launch {
+            mainRepository.restartLevel(currentLocationPackName)
+            locationRepository.fetchLocationPacks()
         }
     }
 }

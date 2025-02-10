@@ -510,11 +510,11 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             R.id.terkep_kinezet -> {
                 val terkepKinezetTitle = item
                 if (satelliteOn == false) {
-                    mGoogleMap?.mapType = GoogleMap.MAP_TYPE_SATELLITE
+                    mGoogleMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
                     terkepKinezetTitle.setTitle("Alap nézet")
                     satelliteOn = true
                 } else {
-                    mGoogleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
+                    mGoogleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
                     terkepKinezetTitle.setTitle("Műhold nézet")
                     satelliteOn = false
                 }
@@ -599,16 +599,26 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         continueButton.setOnClickListener()
         {
             currentLocationPack = currentLocationPackData.name
-            mGoogleMap.setInfoWindowAdapter(
-                CustomInfoWindowForGoogleMap(
-                    this@MainScreen,
-                    allLocationPackData,
-                    currentLocationPack
-                )
-            )
-            viewModel.currentLocationPackDataSet(currentLocationPackData)
-            dialog.dismiss()
-            marker.hideInfoWindow()
+            viewModel.isLocationpackDone(currentLocationPack!!) { isDone ->
+                if (isDone) {
+                    showReplayDialog(currentLocationPackData, allLocationPackData)
+                    dialog.dismiss()
+                    marker.hideInfoWindow()
+                }
+                else
+                {
+                    mGoogleMap.setInfoWindowAdapter(
+                        CustomInfoWindowForGoogleMap(
+                            this@MainScreen,
+                            allLocationPackData,
+                            currentLocationPack
+                        )
+                    )
+                    viewModel.currentLocationPackDataSet(currentLocationPackData)
+                    dialog.dismiss()
+                    marker.hideInfoWindow()
+                }
+            }
         }
         lpImage.setImageBitmap(picture)
         lpDescription.text = currentLocationPackData.description
@@ -674,6 +684,32 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
     }
 
+    fun showReplayDialog(currentLocationPackData: LocationPackData, allLocationPackData: MutableList<LocationPackData>){
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.restart_dialog)
+        dialog.setCancelable(true)
+        val restartButton = dialog.findViewById<Button>(R.id.restartButton)
+        val cancelButton = dialog.findViewById<Button>(R.id.cancelButton)
+
+        restartButton.setOnClickListener{
+            viewModel.restartLevel(currentLocationPackData.name)
+            mGoogleMap.setInfoWindowAdapter(
+                CustomInfoWindowForGoogleMap(
+                    this@MainScreen,
+                    allLocationPackData,
+                    currentLocationPack
+                )
+            )
+            viewModel.currentLocationPackDataSet(currentLocationPackData)
+            dialog.dismiss()
+        }
+
+        cancelButton.setOnClickListener{
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
     fun closeInfoWindow(view: View) {
 
     }
