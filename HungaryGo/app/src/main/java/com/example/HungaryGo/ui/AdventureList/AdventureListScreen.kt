@@ -4,15 +4,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import androidx.lifecycle.ViewModelProvider
+import android.widget.Spinner
 import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.R
-import com.example.HungaryGo.data.repository.LocationRepository
 import com.example.HungaryGo.ui.Main.MainViewModel
-import com.example.HungaryGo.ui.Main.MainViewModelFactory
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import com.google.firebase.database.FirebaseDatabase
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
+import com.google.android.material.textfield.TextInputLayout
 
 private lateinit var viewModel: MainViewModel
 private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -27,20 +25,24 @@ class AdventureListScreen : AppCompatActivity() {
         val adapter: ArrayAdapter<String>
 
 
+        val textInputLayout: TextInputLayout = findViewById(R.id.dropdownList)
+        val autoCompleteTextView: MaterialAutoCompleteTextView = findViewById(R.id.dropdownList_item)
+
+        /*
+        val orderAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, orderList)
+        orderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) //legördülő listakét jeleníti meg
+        orderSpinner.adapter = orderAdapter*/
 
         val intent = intent
         val locationPackDataList = intent.getSerializableExtra("locationPackList") as? ArrayList<LocationPackData>
             ?: arrayListOf()
 
-
-        if (locationPackDataList != null) {
-            for (locationPackData in locationPackDataList)
-            {
-                listData.add("${locationPackData.name}\nHelyszínek száma: ${locationPackData.locations.count()}")
-            }
+        for (locationPackData in locationPackDataList)
+        {
+            listData.add("${locationPackData.name}\nHelyszínek száma: ${locationPackData.locations.count()}")
         }
-        //public val markerLocations: MutableMap<String? , MarkerOptions> = mutableMapOf()
 
+        //public val markerLocations: MutableMap<String? , MarkerOptions> = mutableMapOf()
 
         val listView: ListView = findViewById(R.id.lista)
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, listData)
