@@ -36,6 +36,7 @@ class LocationRepository(private val db: FirebaseDatabase, private val fusedLoca
                                 "rating" -> locationPackData.rating = buildingSnapshot.value.toString().toDouble()
                                 "description" -> locationPackData.description = buildingSnapshot.value.toString()
                                 "completionNumber" -> locationPackData.completionNumber = buildingSnapshot.value.toString().toInt()
+                                "area" -> locationPackData.area = buildingSnapshot.value.toString()
                                 else -> {
                                     val buildingMap = buildingSnapshot.value as Map<String, Any>
                                     val markerOptions = MarkerOptions().position(

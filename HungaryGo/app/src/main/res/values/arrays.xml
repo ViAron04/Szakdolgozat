@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="orderBy_list" >
-        <item>"név szerint növekvő"</item>
-        <item>"név szerint csökkenő"</item>
+        <item>"A-Zs"</item>
+        <item>"Zs-A"</item>
         <item>"értékelés"</item>
         <item>"népszerűség"</item>
-        <item>"hossz"</item>
+        <item>"hossz szerint növekvő"</item>
+        <item>"hossz szerint csökkenő"</item>
     </string-array>
 </resources>
