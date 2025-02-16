@@ -1,5 +1,6 @@
 package com.example.HungaryGo.ui.AdventureList
 
+import android.app.Dialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
@@ -11,23 +12,35 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
+import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.TextView
+import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelStore
 import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.R
+import com.example.HungaryGo.ui.GloryWall.GloryWallViewModel
 import com.example.HungaryGo.ui.Main.MainViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.material.slider.RangeSlider
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputLayout
 
-private lateinit var viewModel: MainViewModel
+private lateinit var mainViewModel: MainViewModel
 private lateinit var fusedLocationClient: FusedLocationProviderClient
 
+private var completedLPList = mutableListOf<String>()
+
 class AdventureListScreen : AppCompatActivity() {
+
+    private val adventureListViewModel: AdventureListViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_adventure_list)
-
 
         val listData: MutableList<LocationPackData> = mutableListOf()
         val adapter = object: ArrayAdapter<LocationPackData>(this, R.layout.listitemslayout, listData){
@@ -46,6 +59,11 @@ class AdventureListScreen : AppCompatActivity() {
                 val resourceId = context.resources.getIdentifier(locationPack?.area, "drawable", context.packageName)
                 lpAreaImg.setImageResource(resourceId)
 
+                if(completedLPList.contains(locationPack?.name))
+                {
+                    view.setBackgroundColor(ContextCompat.getColor(context, R.color.lightGreen))
+                }
+
                 return view
             }
         }
@@ -58,7 +76,7 @@ class AdventureListScreen : AppCompatActivity() {
         val locationPackDataList = intent.getSerializableExtra("locationPackList") as? ArrayList<LocationPackData>
             ?: arrayListOf()
 
-
+        adventureListViewModel.completedLocationsToList()
 
         for (locationPackData in locationPackDataList)
         {
@@ -116,6 +134,12 @@ class AdventureListScreen : AppCompatActivity() {
                 filterList(s.toString(), adapter, locationPackDataList)
             }
         })
+
+        adventureListViewModel.completedLPList.observe(this, Observer { result ->
+            completedLPList = result
+            listView.adapter = adapter
+        })
+
     }
 
 
@@ -128,5 +152,14 @@ class AdventureListScreen : AppCompatActivity() {
 
     fun displaySortedList(view: View) {
 
+    }
+
+    fun openFilterDialog(view: View) {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.filter_dialog)
+        dialog.setCancelable(true)
+        val seekBar = dialog.findViewById<RangeSlider>(R.id.rangeSeekBar)
+        seekBar.setValues(1f, 10f)
+        dialog.show()
     }
 }

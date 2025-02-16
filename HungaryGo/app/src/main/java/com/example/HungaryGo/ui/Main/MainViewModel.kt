@@ -35,7 +35,7 @@ class MainViewModel(private val locationRepository: LocationRepository): ViewMod
     private val _nearbyLocation = MutableLiveData<String>()
     val nearbyLocation: LiveData<String> get() = _nearbyLocation
 
-    fun getUserName(): String? {
+    fun getUserName(): String {
         return userRepository.getUserName()
     }
 

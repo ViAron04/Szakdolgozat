@@ -67,7 +67,7 @@ class MainRepository() {
     suspend fun checkLocationPackCompletion(currentLocationPackParam: String): Result<Boolean> {
         return try {
             val currentUserEmail = auth.currentUser?.email
-                ?: return Result.failure(Exception("User not authenticated"))
+                ?: return Result.failure(Exception("felhasználó nincs bejelentkezve"))
 
             val documentRef = dbFirestore.collection("userpoints")
                 .document(currentUserEmail)

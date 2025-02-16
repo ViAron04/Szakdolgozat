@@ -25,3 +25,18 @@ data class CurrentUserLocationPackData (
     var completionCount: Int = 0,
     var usersRating: Double = 0.0
 )
+
+data class FiltersData(
+    var teljesitesTeljesitett: Boolean = true,
+    var teljesitesFuggoben: Boolean = true,
+    var teljesitesHatralevo: Boolean = true,
+    var helyszinszamMin: Int = 1,
+    var helyszinszamMax: Int = 10,
+    var tipusBeepitett: Boolean = true,
+    var tipusKozossegi: Boolean = true,
+    var teruletFalusi: Boolean = true,
+    var teruletVarosi: Boolean = true,
+    var teruletOrszagos: Boolean = true,
+    var teruletNemzetkozi: Boolean = true
+)
+

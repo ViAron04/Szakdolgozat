@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="350dp"
+    android:layout_width="375dp"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
@@ -25,6 +25,12 @@
         android:layout_width="match_parent"
         android:layout_height="2dp"
         android:background="@color/grey"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="10dp">
 
         <CheckBox
             android:layout_width="wrap_content"
@@ -65,6 +71,9 @@
                 android:text="Hátralevő" />
 
         </LinearLayout>
+
+    </LinearLayout>
+
 
 
     <View
@@ -123,7 +132,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="5dp">
+        android:layout_marginTop="5dp"
+        android:layout_marginStart="10dp">
 
         <CheckBox
             android:layout_width="wrap_content"
@@ -161,19 +171,13 @@
         android:background="@color/grey"
         android:layout_marginTop="5dp"/>
 
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="5dp"
-        android:layoutDirection="rtl"
-        android:text="Összes" />
+
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="5dp">
+        android:orientation="vertical"
+        android:layout_marginStart="10dp">
 
         <CheckBox
             android:layout_width="wrap_content"
@@ -181,34 +185,52 @@
             android:layout_marginStart="20dp"
             android:layout_marginTop="5dp"
             android:layoutDirection="rtl"
-            android:text="Falusi" />
+            android:text="Összes" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="5dp">
+
+            <CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="5dp"
+                android:layoutDirection="rtl"
+                android:text="Falusi" />
+
+            <CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="5dp"
+                android:layoutDirection="rtl"
+                android:text="Városi" />
+
+            <CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="5dp"
+                android:layoutDirection="rtl"
+                android:text="Országos" />
+
+        </LinearLayout>
 
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
             android:layoutDirection="rtl"
-            android:text="Városi" />
-
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="5dp"
-            android:layoutDirection="rtl"
-            android:text="Országos" />
-
-
+            android:text="Nemzetközi" />
 
     </LinearLayout>
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="5dp"
-        android:layoutDirection="rtl"
-        android:text="Nemzetközi" />
+
+
 
 
 
