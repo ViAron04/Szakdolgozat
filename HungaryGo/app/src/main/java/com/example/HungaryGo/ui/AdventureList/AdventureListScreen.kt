@@ -12,17 +12,12 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
-import android.widget.SeekBar
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelStore
 import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.R
-import com.example.HungaryGo.ui.GloryWall.GloryWallViewModel
 import com.example.HungaryGo.ui.Main.MainViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.material.slider.RangeSlider
@@ -33,6 +28,7 @@ private lateinit var mainViewModel: MainViewModel
 private lateinit var fusedLocationClient: FusedLocationProviderClient
 
 private var completedLPList = mutableListOf<String>()
+private var startedLPList = mutableListOf<String>()
 
 class AdventureListScreen : AppCompatActivity() {
 
@@ -64,6 +60,11 @@ class AdventureListScreen : AppCompatActivity() {
                     view.setBackgroundColor(ContextCompat.getColor(context, R.color.lightGreen))
                 }
 
+                if(startedLPList.contains(locationPack?.name))
+                {
+                    view.setBackgroundColor(ContextCompat.getColor(context, R.color.lightOrange))
+                }
+
                 return view
             }
         }
@@ -76,7 +77,7 @@ class AdventureListScreen : AppCompatActivity() {
         val locationPackDataList = intent.getSerializableExtra("locationPackList") as? ArrayList<LocationPackData>
             ?: arrayListOf()
 
-        adventureListViewModel.completedLocationsToList()
+        adventureListViewModel.completedAndStartedLocationsToList()
 
         for (locationPackData in locationPackDataList)
         {
@@ -139,6 +140,10 @@ class AdventureListScreen : AppCompatActivity() {
             completedLPList = result
             listView.adapter = adapter
         })
+        adventureListViewModel.startedLPlist.observe(this, Observer { result ->
+            startedLPList = result
+            listView.adapter = adapter
+        })
 
     }
 
@@ -150,6 +155,14 @@ class AdventureListScreen : AppCompatActivity() {
         adapter.notifyDataSetChanged()
     }
 
+    /*
+    fun filteredLocationPacks(originalList: List<LocationPackData>, filterData: FiltersData): List<LocationPackData>{
+        return originalList.filter {
+
+        }
+
+    }
+    */
     fun displaySortedList(view: View) {
 
     }

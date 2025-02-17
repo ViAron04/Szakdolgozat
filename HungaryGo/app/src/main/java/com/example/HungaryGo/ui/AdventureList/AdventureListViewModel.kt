@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.HungaryGo.data.repository.AdventureListRepository
-import com.example.HungaryGo.data.repository.UserRepository
 import kotlinx.coroutines.launch
 
 class AdventureListViewModel: ViewModel() {
@@ -14,15 +13,25 @@ class AdventureListViewModel: ViewModel() {
     private val _completedLPList = MutableLiveData<MutableList<String>>()
     val completedLPList: MutableLiveData<MutableList<String>> = _completedLPList
 
+    private val _startedLPList = MutableLiveData<MutableList<String>>()
+    val startedLPlist: MutableLiveData<MutableList<String>> = _startedLPList
+
     //completedLPList megváltoztatása, Listába gyűjti a felhazsnáló által teljesített pályákat, a kilistázáshoz
-    fun completedLocationsToList(){
+    fun completedAndStartedLocationsToList(){
         viewModelScope.launch {
-            val result = adventureListRepository.completedLocationsToList()
+            val result = adventureListRepository.completedAndStartedLocationsToList()
             result.onSuccess { list ->
-                _completedLPList.value = list
+                _completedLPList.value = list.first
+                _startedLPList.value = list.second
             }.onFailure { e ->
                 Log.e("GloryWallViewModel", "Hiba történt: ", e)
             }
+        }
+    }
+
+    fun startedLocationsToList(){
+        viewModelScope.launch {
+            val result = adventureListRepository
         }
     }
 
