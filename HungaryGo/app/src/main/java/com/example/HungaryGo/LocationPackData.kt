@@ -9,7 +9,8 @@ data class LocationPackData(
     var description: String = "",
     var rating: Double? = null,
     var completionNumber: Int = 0,
-    var area: String = "none"
+    var area: String = "",
+    var maker: String = ""
 ) : Serializable
 // a serializable az intentként törénő küldéshez kell
 

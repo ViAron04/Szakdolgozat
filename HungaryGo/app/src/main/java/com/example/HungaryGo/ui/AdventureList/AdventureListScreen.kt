@@ -9,6 +9,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
@@ -16,6 +18,7 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import com.example.HungaryGo.FiltersData
 import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.R
 import com.example.HungaryGo.ui.Main.MainViewModel
@@ -29,6 +32,7 @@ private lateinit var fusedLocationClient: FusedLocationProviderClient
 
 private var completedLPList = mutableListOf<String>()
 private var startedLPList = mutableListOf<String>()
+private var filters: FiltersData? = null
 
 class AdventureListScreen : AppCompatActivity() {
 
@@ -37,6 +41,9 @@ class AdventureListScreen : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_adventure_list)
+
+        filters = FiltersData()
+
 
         val listData: MutableList<LocationPackData> = mutableListOf()
         val adapter = object: ArrayAdapter<LocationPackData>(this, R.layout.listitemslayout, listData){
@@ -55,15 +62,13 @@ class AdventureListScreen : AppCompatActivity() {
                 val resourceId = context.resources.getIdentifier(locationPack?.area, "drawable", context.packageName)
                 lpAreaImg.setImageResource(resourceId)
 
-                if(completedLPList.contains(locationPack?.name))
-                {
-                    view.setBackgroundColor(ContextCompat.getColor(context, R.color.lightGreen))
+                val backgroundColor = when {
+                    completedLPList.contains(locationPack?.name) -> R.color.lightGreen
+                    startedLPList.contains(locationPack?.name) -> R.color.lightOrange
+                    else -> R.color.white
                 }
 
-                if(startedLPList.contains(locationPack?.name))
-                {
-                    view.setBackgroundColor(ContextCompat.getColor(context, R.color.lightOrange))
-                }
+                view.setBackgroundColor(ContextCompat.getColor(context, backgroundColor))
 
                 return view
             }
@@ -145,6 +150,12 @@ class AdventureListScreen : AppCompatActivity() {
             listView.adapter = adapter
         })
 
+        val filterButton = findViewById<Button>(R.id.filterButton)
+
+        filterButton.setOnClickListener{
+            openFilterDialog(locationPackDataList,adapter)
+        }
+
     }
 
 
@@ -155,24 +166,92 @@ class AdventureListScreen : AppCompatActivity() {
         adapter.notifyDataSetChanged()
     }
 
-    /*
-    fun filteredLocationPacks(originalList: List<LocationPackData>, filterData: FiltersData): List<LocationPackData>{
-        return originalList.filter {
 
+    fun filteredLocationPacks(originalList: List<LocationPackData>): List<LocationPackData>{
+        return originalList.filter { pack ->
+
+            val teljesitesFuggoben = filters!!.teljesitesFuggoben && startedLPList.contains(pack.name)
+            val teljesitesTeljesitett = filters!!.teljesitesTeljesitett && completedLPList.contains(pack.name)
+            val teljesitesHatralevo = filters!!.teljesitesHatralevo && !startedLPList.contains(pack.name) && !completedLPList.contains(pack.name)
+
+            val teljesitesSzuro = teljesitesFuggoben || teljesitesHatralevo || teljesitesTeljesitett
+
+            val helyszinSzamMin = filters!!.helyszinszamMin
+            val helyszinSzamMax = filters!!.helyszinszamMax
+
+            val helyszinSzamSzuro = pack.locations.size in helyszinSzamMin..helyszinSzamMax
+
+            val tipusSzuro = when (pack.maker) {
+                "builtIn" -> filters!!.tipusBeepitett
+                "community" -> filters!!.tipusKozossegi
+                else -> false
+            }
+
+            val teruletSzuro = when (pack.area) {
+                "falu" -> filters!!.teruletFalusi
+                "varos" -> filters!!.teruletVarosi
+                "orszag" -> filters!!.teruletOrszagos
+                "nemzetkozi" -> filters!!.teruletNemzetkozi
+                else -> false
+            }
+
+            teljesitesSzuro && teruletSzuro && tipusSzuro && helyszinSzamSzuro
         }
 
     }
-    */
+
     fun displaySortedList(view: View) {
 
     }
 
-    fun openFilterDialog(view: View) {
+    fun openFilterDialog(originalList: List<LocationPackData>, adapter: ArrayAdapter<LocationPackData>) {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.filter_dialog)
         dialog.setCancelable(true)
         val seekBar = dialog.findViewById<RangeSlider>(R.id.rangeSeekBar)
         seekBar.setValues(1f, 10f)
+        val teljesitesTeljesitett = dialog.findViewById<CheckBox>(R.id.teljesitesTeljesitett)
+        val teljesitesFuggoben = dialog.findViewById<CheckBox>(R.id.teljesitesFuggoben)
+        val teljesitesHatralevo = dialog.findViewById<CheckBox>(R.id.teljesitesHatralevo)
+        val tipusBeepitett = dialog.findViewById<CheckBox>(R.id.tipusBeepitett)
+        val tipusKozossegi = dialog.findViewById<CheckBox>(R.id.tipusKozossegi)
+        val teruletFalusi =  dialog.findViewById<CheckBox>(R.id.teruletFalusi)
+        val teruletVarosi =  dialog.findViewById<CheckBox>(R.id.teruletVarosi)
+        val teruletOrszagos =  dialog.findViewById<CheckBox>(R.id.teruletOrszagos)
+        val teruletNemzetkozi =  dialog.findViewById<CheckBox>(R.id.teruletNemzetkozi)
+        val applyButton = dialog.findViewById<Button>(R.id.applyButton)
+
+        teljesitesTeljesitett.isChecked = filters!!.teljesitesTeljesitett
+        teljesitesFuggoben.isChecked = filters!!.teljesitesFuggoben
+        teljesitesHatralevo.isChecked = filters!!.teljesitesHatralevo
+        tipusBeepitett.isChecked = filters!!.tipusBeepitett
+        tipusKozossegi.isChecked = filters!!.tipusKozossegi
+        teruletFalusi.isChecked = filters!!.teruletFalusi
+        teruletVarosi.isChecked = filters!!.teruletVarosi
+        teruletOrszagos.isChecked = filters!!.teruletOrszagos
+        teruletNemzetkozi.isChecked = filters!!.teruletNemzetkozi
+
+        applyButton.setOnClickListener {
+            filters = FiltersData (
+                teljesitesTeljesitett = teljesitesTeljesitett.isChecked,
+                teljesitesFuggoben = teljesitesFuggoben.isChecked,
+                teljesitesHatralevo = teljesitesHatralevo.isChecked,
+                tipusBeepitett = tipusBeepitett.isChecked,
+                tipusKozossegi = tipusKozossegi.isChecked,
+                teruletFalusi = teruletFalusi.isChecked,
+                teruletVarosi = teruletVarosi.isChecked,
+                teruletOrszagos = teruletOrszagos.isChecked,
+                teruletNemzetkozi = teruletNemzetkozi.isChecked,
+                helyszinszamMin = seekBar.values[0].toInt(),
+                helyszinszamMax = seekBar.values[1].toInt()
+            )
+            adapter.clear()
+            adapter.addAll(filteredLocationPacks(originalList))
+            adapter.notifyDataSetChanged()
+
+            dialog.dismiss()
+        }
+
         dialog.show()
     }
 }
