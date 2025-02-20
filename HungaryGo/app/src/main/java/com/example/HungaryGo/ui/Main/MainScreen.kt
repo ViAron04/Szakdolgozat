@@ -8,6 +8,7 @@ import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Location
 import com.google.android.gms.location.LocationRequest
 import androidx.appcompat.app.AppCompatActivity
@@ -312,6 +313,14 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                         showLDialog(markersLocationPackData, marker)
                     }
                 }
+
+                val startablePackName = intent.getSerializableExtra("startableLocationPack") as? String
+                if (startablePackName != null) {
+                    val startablePack = locationPackList.find { it.name == startablePackName }
+                    if (startablePack != null) {
+                        showLPDialog(startablePack, null, locationPackList)
+                    }
+                }
             }
         }
 
@@ -585,8 +594,9 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 dialog.show()
     }
 
-    fun showLPDialog(currentLocationPackData: LocationPackData, marker: Marker, allLocationPackData: MutableList<LocationPackData>) {
-        val picture: Bitmap = BitmapStore.loadedBitmaps[currentLocationPackData.name]!!
+    fun showLPDialog(currentLocationPackData: LocationPackData, marker: Marker?, allLocationPackData: MutableList<LocationPackData>) {
+
+
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.location_pack_dialog)
         dialog.setCancelable(true)
@@ -603,7 +613,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 if (isDone) {
                     showReplayDialog(currentLocationPackData, allLocationPackData)
                     dialog.dismiss()
-                    marker.hideInfoWindow()
+                    marker?.hideInfoWindow()
                 }
                 else
                 {
@@ -616,11 +626,17 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                     )
                     viewModel.currentLocationPackDataSet(currentLocationPackData)
                     dialog.dismiss()
-                    marker.hideInfoWindow()
+                    marker?.hideInfoWindow()
                 }
             }
         }
-        lpImage.setImageBitmap(picture)
+
+        //TODO kép kérdést megoldani
+        if(BitmapStore.loadedBitmaps.isNotEmpty()){
+            val picture: Bitmap = BitmapStore.loadedBitmaps[currentLocationPackData.name]!!
+            lpImage.setImageBitmap(picture)
+        }
+
         lpDescription.text = currentLocationPackData.description
         lpLocationCount.text = "Helyszínek száma: ${currentLocationPackData.locations.count()}"
         if(currentLocationPackData.rating != 0.0) lpRating.text = "Értékelés: %.2f".format(currentLocationPackData.rating)

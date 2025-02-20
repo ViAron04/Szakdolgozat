@@ -1,6 +1,7 @@
 package com.example.HungaryGo.ui.AdventureList
 
 import android.app.Dialog
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
@@ -21,6 +22,7 @@ import androidx.lifecycle.Observer
 import com.example.HungaryGo.FiltersData
 import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.R
+import com.example.HungaryGo.ui.Main.MainScreen
 import com.example.HungaryGo.ui.Main.MainViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.material.slider.RangeSlider
@@ -92,6 +94,15 @@ class AdventureListScreen : AppCompatActivity() {
 
         val listView: ListView = findViewById(R.id.lista)
        listView.adapter = adapter
+
+        listView.setOnItemClickListener { parent, view, position, id ->
+            val selectedItem = filteredLocationPacks(locationPackDataList)[position]
+            val mainScreenIntent = Intent(this@AdventureListScreen, MainScreen::class.java)
+
+            mainScreenIntent.putExtra("startableLocationPack", selectedItem.name)
+
+            startActivity(mainScreenIntent)
+        }
 
         autoCompleteTextView.setOnItemClickListener { parent, view, position, id ->
             val selectedItem = parent.getItemAtPosition(position) as String
