@@ -98,25 +98,25 @@ class AdventureListScreen : AppCompatActivity() {
             val orderedLocationPackDataList: List<LocationPackData>
             when(selectedItem){
                 "A-Zs" -> {
-                    orderedLocationPackDataList = locationPackDataList.sortedBy { it.name }
+                    orderedLocationPackDataList = filteredLocationPacks(locationPackDataList).sortedBy { it.name }
                 }
                 "Zs-A" -> {
-                    orderedLocationPackDataList = locationPackDataList.sortedByDescending { it.name }
+                    orderedLocationPackDataList = filteredLocationPacks(locationPackDataList).sortedByDescending { it.name }
                 }
                 "értékelés" -> {
-                    orderedLocationPackDataList = locationPackDataList.sortedByDescending { it.rating }
+                    orderedLocationPackDataList = filteredLocationPacks(locationPackDataList).sortedByDescending { it.rating }
                 }
                 "népszerűség" -> {
-                    orderedLocationPackDataList = locationPackDataList.sortedByDescending { it.completionNumber }
+                    orderedLocationPackDataList = filteredLocationPacks(locationPackDataList).sortedByDescending { it.completionNumber }
                 }
                 "hossz szerint növekvő" -> {
-                    orderedLocationPackDataList = locationPackDataList.sortedBy { it.locations.size }
+                    orderedLocationPackDataList = filteredLocationPacks(locationPackDataList).sortedBy { it.locations.size }
                 }
                 "hossz szerint csökkenő" -> {
-                    orderedLocationPackDataList = locationPackDataList.sortedByDescending { it.locations.size }
+                    orderedLocationPackDataList = filteredLocationPacks(locationPackDataList).sortedByDescending { it.locations.size }
                 }
                 else -> {
-                    orderedLocationPackDataList = locationPackDataList
+                    orderedLocationPackDataList = filteredLocationPacks(locationPackDataList)
                 }
             }
 
@@ -137,7 +137,7 @@ class AdventureListScreen : AppCompatActivity() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
 
-                filterList(s.toString(), adapter, locationPackDataList)
+                filterList(s.toString(), adapter, filteredLocationPacks(locationPackDataList))
             }
         })
 
@@ -159,7 +159,7 @@ class AdventureListScreen : AppCompatActivity() {
     }
 
 
-    fun filterList(searchedChars: String, adapter: ArrayAdapter<LocationPackData>, listData: MutableList<LocationPackData>) {
+    fun filterList(searchedChars: String, adapter: ArrayAdapter<LocationPackData>, listData: List<LocationPackData>) {
         val filteredList = listData.filter { it.name.contains(searchedChars) }
         adapter.clear()
         adapter.addAll(filteredList)
