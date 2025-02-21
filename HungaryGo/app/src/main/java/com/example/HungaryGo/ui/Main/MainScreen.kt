@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import android.location.Location
 import com.google.android.gms.location.LocationRequest
 import androidx.appcompat.app.AppCompatActivity
@@ -32,6 +33,8 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.R
 import com.example.HungaryGo.data.repository.LocationRepository
@@ -631,11 +634,37 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             }
         }
 
-        //TODO kép kérdést megoldani
-        if(BitmapStore.loadedBitmaps.isNotEmpty()){
+        //Ha a bitmapstore még nem tartalmazná a képet
+        if(!BitmapStore.loadedBitmaps.containsKey(currentLocationPackData.name )){
+            val currentLocationPackUri = removeAccents(currentLocationPackData.name.lowercase().replace(' ','_'))
+            val storageRef = FirebaseStorage.getInstance().reference.child("location_packs_images/$currentLocationPackUri.jpg")
+
+            storageRef.downloadUrl.addOnSuccessListener { uri ->
+                Glide.with(this)
+                    .asBitmap()
+                    .load(uri)
+                    .into(object: CustomTarget<Bitmap>(){
+
+                        override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                            BitmapStore.loadedBitmaps[currentLocationPackData.name] = resource
+                            lpImage.setImageBitmap(resource)
+                        }
+
+                        override fun onLoadCleared(placeholder: Drawable?) {}
+                        override fun onLoadFailed(errorDrawable: Drawable?) {
+                            Toast.makeText(this@MainScreen, "Kép letöltése sikertelen", Toast.LENGTH_SHORT).show()
+                        }
+                    })
+            }.addOnFailureListener {
+                Toast.makeText(this, "Hiba történt a kép betöltésekor", Toast.LENGTH_SHORT).show()
+            }
+        }
+        else{
             val picture: Bitmap = BitmapStore.loadedBitmaps[currentLocationPackData.name]!!
             lpImage.setImageBitmap(picture)
         }
+
+
 
         lpDescription.text = currentLocationPackData.description
         lpLocationCount.text = "Helyszínek száma: ${currentLocationPackData.locations.count()}"
