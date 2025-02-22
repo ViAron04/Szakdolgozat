@@ -3,14 +3,21 @@ package com.example.HungaryGo.ui.Maker
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.Manifest
+import android.app.Dialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import com.google.android.gms.location.LocationRequest
 
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Observer
 import com.example.HungaryGo.R
+import com.example.HungaryGo.ui.Main.MainScreen
+import com.example.HungaryGo.ui.SignIn.SignInViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -34,6 +41,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback1: LocationCallback
+    private val viewModel: MakerViewModel by viewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,6 +77,12 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        viewModel.getUsersProjects()
+        viewModel.usersProjectsList.observe(this, Observer { result ->
+            showMakerProjectsDialog()
+        })
+        //showMakerProjectsDialog()
+
     }
 
     private fun getCurrentLocationUser() {
@@ -94,6 +108,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        showMakerProjectsDialog()
 
     }
     override fun onMapReady(googleMap: GoogleMap) {
@@ -131,6 +146,16 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             .draggable(false)
 
         mGoogleMap?.addMarker(actualMarker)
+    }
+
+    fun showMakerProjectsDialog(){
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.maker_projects_dialog)
+        dialog.setCancelable(false)
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+
+
+        dialog.show()
     }
 
 }

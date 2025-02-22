@@ -192,7 +192,7 @@ class AdventureListScreen : AppCompatActivity() {
 
             val helyszinSzamSzuro = pack.locations.size in helyszinSzamMin..helyszinSzamMax
 
-            val tipusSzuro = when (pack.maker) {
+            val tipusSzuro = when (pack.origin) {
                 "builtIn" -> filters!!.tipusBeepitett
                 "community" -> filters!!.tipusKozossegi
                 else -> false

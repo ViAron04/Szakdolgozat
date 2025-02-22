@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/lpName"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:textStyle="bold"
+            android:textSize="20dp"
+            android:text="Név"
+            />
+        <TextView
+            android:id="@+id/lpLocationCount"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:textStyle="bold"
+            android:textColor="@color/grey"
+            android:textSize="20dp"
+            android:text="Helyszínek száma: "
+            />
+    </LinearLayout>
+
+
+    <ImageView
+        android:id="@+id/levelImg"
+        android:src="@drawable/questionmark"
+        android:layout_width="109dp"
+        android:layout_height="100dp"
+        android:layout_gravity="end"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="10dp"
+        android:scaleType="fitCenter"/>
+
+
+</LinearLayout>

@@ -10,7 +10,7 @@ data class LocationPackData(
     var rating: Double? = null,
     var completionNumber: Int = 0,
     var area: String = "",
-    var maker: String = ""
+    var origin: String = ""
 ) : Serializable
 // a serializable az intentként törénő küldéshez kell
 
@@ -41,3 +41,10 @@ data class FiltersData(
     var teruletNemzetkozi: Boolean = true
 )
 
+data class MakerLocationPackData(
+    var name: String = "",
+    var locations: MutableMap<String, LocationDescription?> = mutableMapOf(),
+    var description: String = "",
+    var area: String = "",
+    var origin: String = "community"
+)
