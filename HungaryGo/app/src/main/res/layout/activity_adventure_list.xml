@@ -7,12 +7,21 @@
     android:orientation="vertical"
     tools:context=".ui.AdventureList.AdventureListScreen">
 
+    <ImageButton
+        android:onClick="backToMainScreen"
+        android:layout_width="75dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/redarrow"
+        android:scaleType="fitCenter"
+        android:background="@android:color/transparent"
+        />
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="258dp"
         android:layout_height="62dp"
-        android:layout_marginTop="16dp"
         android:text="Kalandok"
         android:textAlignment="center"
         android:layout_gravity="center"

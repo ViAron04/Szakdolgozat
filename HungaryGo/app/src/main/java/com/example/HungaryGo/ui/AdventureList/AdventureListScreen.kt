@@ -265,4 +265,8 @@ class AdventureListScreen : AppCompatActivity() {
 
         dialog.show()
     }
+
+    fun backToMainScreen(view: View) {
+        startActivity(Intent(this@AdventureListScreen, MainScreen::class.java))
+    }
 }

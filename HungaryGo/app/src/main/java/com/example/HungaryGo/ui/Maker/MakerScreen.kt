@@ -16,6 +16,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.ProgressBar
@@ -173,6 +175,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         dialog.setCancelable(false)
         dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         val listView = dialog.findViewById<ListView>(R.id.projectsListView)
+        val backToMainButton = dialog.findViewById<ImageButton>(R.id.backToMainButton)
 
         if(viewModel.usersProjectsList.value != null)
         {
@@ -191,8 +194,12 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
             listView.adapter = adapter
-
         }
+
+        backToMainButton.setOnClickListener{
+            backToMainScreen()
+        }
+
         dialog.show()
     }
 
@@ -227,4 +234,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    fun backToMainScreen() {
+        startActivity(Intent(this@MakerScreen, MainScreen::class.java))
+    }
 }

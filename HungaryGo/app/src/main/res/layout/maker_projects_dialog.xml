@@ -17,6 +17,7 @@
             android:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
             <ImageButton
+                android:id="@+id/backToMainButton"
                 android:layout_width="75dp"
                 android:layout_height="75dp"
                 android:background="@android:color/transparent"
