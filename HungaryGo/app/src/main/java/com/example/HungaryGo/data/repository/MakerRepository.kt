@@ -16,9 +16,9 @@ class MakerRepository {
     private val auth: FirebaseAuth = Firebase.auth
     private val dbFirestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
-    suspend fun getUsersProjects(): Result<MutableList<MakerLocationPackData>?>{
+    suspend fun getUsersProjects(): Result<MutableList<MakerLocationPackData>> {
         return try {
-            var makerLocationPackList: MutableList<MakerLocationPackData>? = mutableListOf()
+            var makerLocationPackList: MutableList<MakerLocationPackData> = mutableListOf()
 
             val currentUserEmail = auth.currentUser?.email.toString()
             val documentRef = dbFirestore.collection("userpoints")
@@ -27,9 +27,9 @@ class MakerRepository {
 
             val querySnapshot = documentRef.get().await()
 
-            if(!querySnapshot.isEmpty){
-                for (makerLP in querySnapshot){
-                    var makerLocationPackData: MakerLocationPackData = MakerLocationPackData()
+            if (!querySnapshot.isEmpty) {
+                for (makerLP in querySnapshot) {
+                    val makerLocationPackData: MakerLocationPackData = MakerLocationPackData()
 
                     makerLocationPackData.name = makerLP.id
                     makerLocationPackData.origin = makerLP.getString("origin") ?: ""
@@ -37,35 +37,34 @@ class MakerRepository {
 
                     val locationsRef = documentRef.document(makerLP.id).collection("locations")
                     val locationSanpshot = locationsRef.get().await()
-                    if(!locationSanpshot.isEmpty){
+                    if (!locationSanpshot.isEmpty) {
                         val locationData: MutableMap<String, LocationDescription?> = mutableMapOf()
-                        for (locationMakerData in querySnapshot){
+                        for (locationMakerData in locationSanpshot) {
                             val locationDescription: LocationDescription = LocationDescription()
 
-                            locationDescription.description = locationMakerData.getString("Description")
+                            locationDescription.description =
+                                locationMakerData.getString("Description")
                             locationDescription.markerOptions = MarkerOptions().position(
                                 LatLng(
                                     locationMakerData.getGeoPoint("Marker")!!.latitude,
                                     locationMakerData.getGeoPoint("Marker")!!.longitude,
-                                ))
-                            if(locationMakerData.getBoolean("IsQuestion") == true){
+                                )
+                            )
+                            if (locationMakerData.getBoolean("IsQuestion") == true) {
                                 locationDescription.answer = locationMakerData.getString("Answer")
-                                locationDescription.question = locationMakerData.getString("Question")
+                                locationDescription.question =
+                                    locationMakerData.getString("Question")
                             }
                             locationData[locationMakerData.id] = locationDescription
                         }
                         makerLocationPackData.locations = locationData
                     }
-                    makerLocationPackList?.add(makerLocationPackData)
+                    makerLocationPackList.add(makerLocationPackData)
                 }
-            }
-            else{
-                makerLocationPackList = null
             }
 
             Result.success(makerLocationPackList)
-        }
-        catch (e: Exception){
+        } catch (e: Exception) {
             Result.failure(e)
         }
     }

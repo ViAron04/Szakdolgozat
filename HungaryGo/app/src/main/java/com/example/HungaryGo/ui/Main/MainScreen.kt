@@ -142,13 +142,13 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         setupNavigationDrawer()
         setupObservers()
 
-        viewModel.loadLocationPacks()
+
         getCurrentLocationUser()
+        viewModel.loadLocationPacks()
 
 
-
-        fusedLocationClient =
-            LocationServices.getFusedLocationProviderClient(this) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
+       // fusedLocationClient =
+       //     LocationServices.getFusedLocationProviderClient(this) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
 
 
         var currentMarker: Marker? = null
@@ -373,8 +373,19 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
         //lekéri a felhasználó tartózkodási helyét
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null) {
+            if(location != null)
+            {
                 currentLocation = location
+
+            }
+            else
+            {
+                val manualLocation = Location("dev").apply {
+                    latitude = 46.904001
+                    longitude = 17.862048
+                }
+                currentLocation = manualLocation
+            }
                 //kiírja a koordinátákat, ha elérhető lokáció
                 Toast.makeText(
                     applicationContext, "${currentLocation.latitude}, ${currentLocation.longitude}",
@@ -384,7 +395,9 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 val mapFragment =
                     supportFragmentManager.findFragmentById(R.id.mapFelulet) as SupportMapFragment
                 mapFragment.getMapAsync(this)
-            }
+
+        }.addOnFailureListener{
+            Log.e("FUSEDLOCATIONCLIENT", "ROSSZ")
         }
     }
 
@@ -414,6 +427,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     //akkor hívódik meg, ha működik az API
     override fun onMapReady(googleMap: GoogleMap) {
         mGoogleMap = googleMap
+
 
         val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
 

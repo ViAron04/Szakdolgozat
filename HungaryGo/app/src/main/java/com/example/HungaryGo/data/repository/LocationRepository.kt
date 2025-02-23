@@ -50,7 +50,6 @@ class LocationRepository(private val db: FirebaseDatabase, private val fusedLoca
                                     val name = buildingSnapshot.key.toString()
                                     val question: String? = buildingMap["Question"] as String?
                                     val answer: String? = buildingMap["Answer"] as String?
-                                    val origin: String? = buildingMap["Origin"] as String?
                                     locationPackData.locations[name] = LocationDescription(
                                         markerOptions, description, question, answer
                                     )

@@ -6,15 +6,28 @@ import android.Manifest
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.location.Location
+import android.view.LayoutInflater
 import com.google.android.gms.location.LocationRequest
 
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.ArrayAdapter
+import android.widget.ImageView
+import android.widget.ListView
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import com.example.HungaryGo.LocationPackData
+import com.example.HungaryGo.MakerLocationPackData
 import com.example.HungaryGo.R
 import com.example.HungaryGo.ui.Main.MainScreen
 import com.example.HungaryGo.ui.SignIn.SignInViewModel
@@ -31,6 +44,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import kotlinx.coroutines.launch
 
 class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
@@ -77,11 +91,16 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        viewModel.getUsersProjects()
+        lifecycleScope.launch {
+            showLoading(true)
+            viewModel.getUsersProjects()
+            showLoading(false)
+        }
+
         viewModel.usersProjectsList.observe(this, Observer { result ->
             showMakerProjectsDialog()
         })
-        //showMakerProjectsDialog()
+
 
     }
 
@@ -153,9 +172,59 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         dialog.setContentView(R.layout.maker_projects_dialog)
         dialog.setCancelable(false)
         dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        val listView = dialog.findViewById<ListView>(R.id.projectsListView)
 
+        if(viewModel.usersProjectsList.value != null)
+        {
+            val adapter = object: ArrayAdapter<MakerLocationPackData>(this, R.layout.maker_projects_element, viewModel.usersProjectsList.value!!){
+                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                    val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.maker_projects_element, parent, false)
+                    val lpName: TextView = view.findViewById(R.id.lpName)
+                    val lpLocationCount: TextView = view.findViewById(R.id.lpLocationCount)
 
+                    val locationPack = getItem(position)
+
+                    lpName.text = locationPack?.name
+                    lpLocationCount.text = "Helyszínek száma: ${locationPack?.locations?.size.toString()}"
+
+                    return view
+                }
+            }
+            listView.adapter = adapter
+
+        }
         dialog.show()
+    }
+
+    fun showLoading(isVisible: Boolean){
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.loading)
+        dialog.setCancelable(false)
+        val progressBar = dialog.findViewById<ProgressBar>(R.id.progressBar)
+        if(isVisible){
+            dialog.window?.apply {
+                // dialog háttere átlátszó
+                setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+                // dialogon kívüli terület sötétettbé tétele
+                addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                setDimAmount(0.5f)
+            }
+            progressBar.visibility = View.VISIBLE
+            dialog.show()
+        }
+        else{
+            dialog.window?.apply {
+                // Dim hátteret engedélyez
+                addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                // 0.0f -> nincs elsötétítés, 1.0f -> teljesen fekete
+                setDimAmount(0f)
+
+
+            }
+            progressBar.visibility = View.GONE
+            dialog.dismiss()
+        }
     }
 
 }
