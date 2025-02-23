@@ -11,7 +11,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
@@ -37,6 +39,11 @@ class UserRepository {
                 "email" to email
             )
             dbFirestore.collection("userpoints").document(email).set(userMap)
+
+
+            val userDocRef = dbFirestore.collection("userpoints").document(email)
+            userDocRef.update("achievements", FieldValue.arrayUnion("Üdv itt!"))
+
 
             Result.success("Sikeres regisztráció")
 

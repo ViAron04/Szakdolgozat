@@ -169,6 +169,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         mGoogleMap?.addMarker(actualMarker)
     }
 
+
     fun showMakerProjectsDialog(){
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.maker_projects_dialog)
@@ -176,6 +177,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         val listView = dialog.findViewById<ListView>(R.id.projectsListView)
         val backToMainButton = dialog.findViewById<ImageButton>(R.id.backToMainButton)
+
 
         if(viewModel.usersProjectsList.value != null)
         {
@@ -194,6 +196,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
             listView.adapter = adapter
+
         }
 
         backToMainButton.setOnClickListener{
