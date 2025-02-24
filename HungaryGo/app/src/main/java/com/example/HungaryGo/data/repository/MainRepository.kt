@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.Dispatchers
@@ -176,5 +177,21 @@ class MainRepository() {
         } catch (e: Exception) {
             Log.e("MainRepository", "Hiba történt: ", e)
         }
+    }
+
+    fun grantAchievement(achievementName: String){
+        val currentUserEmail = auth.currentUser?.email
+        var containsAchievement = false
+        dbFirestore
+            .collection("userpoints")
+            .document(currentUserEmail!!)
+            .update("achievements", FieldValue.arrayUnion(achievementName))
+            .addOnSuccessListener {
+                Log.d("Achievement", "Achievement sikeresen hozzáadva.")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Achievement", "Achievement hozzáadása sikertelen", e)
+            }
+    //csak akkor ad hozzá, ha korábbról nincs benne
     }
 }

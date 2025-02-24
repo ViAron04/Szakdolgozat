@@ -72,6 +72,7 @@ class MainViewModel(private val locationRepository: LocationRepository): ViewMod
         viewModelScope.launch {
             mainRepository.updateLocationInFirestore(currentLocationPackData.value!!, markerTitle)
             val result = mainRepository.checkLocationPackCompletion(currentLocationPackData.value!!.name)
+            if(result.getOrNull() == true) mainRepository.grantAchievement("Első kaland!")
             _levelCompleted.value = result
         }
     }
