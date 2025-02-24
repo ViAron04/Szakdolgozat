@@ -28,6 +28,7 @@
                 />
 
             <ImageButton
+                android:id="@+id/addProjectButton"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:background="@android:color/transparent"

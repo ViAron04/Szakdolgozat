@@ -17,22 +17,19 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import com.example.HungaryGo.LocationPackData
 import com.example.HungaryGo.MakerLocationPackData
 import com.example.HungaryGo.R
 import com.example.HungaryGo.ui.Main.MainScreen
-import com.example.HungaryGo.ui.SignIn.SignInViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -57,6 +54,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback1: LocationCallback
+    private var openedDialog: Dialog? = null
     private val viewModel: MakerViewModel by viewModels()
 
 
@@ -177,7 +175,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         val listView = dialog.findViewById<ListView>(R.id.projectsListView)
         val backToMainButton = dialog.findViewById<ImageButton>(R.id.backToMainButton)
-
+        val addProjectButton = dialog.findViewById<ImageButton>(R.id.addProjectButton)
 
         if(viewModel.usersProjectsList.value != null)
         {
@@ -201,6 +199,37 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
         backToMainButton.setOnClickListener{
             backToMainScreen()
+        }
+
+        addProjectButton.setOnClickListener{
+            showMakerLevelNameDialog()
+        }
+
+        openedDialog = dialog
+        dialog.show()
+    }
+
+    private fun showMakerLevelNameDialog() {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.maker_level_name_dialog)
+        dialog.setCancelable(false)
+        val lpName = dialog.findViewById<EditText>(R.id.lpName)
+        val saveButton = dialog.findViewById<Button>(R.id.saveButton)
+        val cancelButton = dialog.findViewById<Button>(R.id.cancelButton)
+
+        saveButton.setOnClickListener{
+            if(lpName.text.toString() != "" && lpName.text != null){
+                /*viewModel.addUserProject(lpName.text.toString())
+                dialog.dismiss()
+                openedDialog?.dismiss()*/
+            }
+            else{
+                Toast.makeText(this, "Nem adtál meg nevet!", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        cancelButton.setOnClickListener{
+            dialog.dismiss()
         }
 
         dialog.show()

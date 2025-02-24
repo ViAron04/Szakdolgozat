@@ -23,4 +23,10 @@ class MakerViewModel: ViewModel() {
             }
         }
     }
+
+    fun addUserProject(projectName: String){
+        viewModelScope.launch {
+            repository.addUsersProject(projectName)
+        }
+    }
 }

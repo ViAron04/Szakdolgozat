@@ -40,11 +40,6 @@ class UserRepository {
             )
             dbFirestore.collection("userpoints").document(email).set(userMap)
 
-
-            val userDocRef = dbFirestore.collection("userpoints").document(email)
-            userDocRef.update("achievements", FieldValue.arrayUnion("Üdv itt!"))
-
-
             Result.success("Sikeres regisztráció")
 
         }catch (e: Exception) {

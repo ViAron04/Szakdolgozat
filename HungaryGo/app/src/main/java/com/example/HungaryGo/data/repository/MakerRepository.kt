@@ -69,4 +69,12 @@ class MakerRepository {
         }
     }
 
+    fun addUsersProject(projectName: String){
+        val currentUserEmail = auth.currentUser?.email.toString()
+        dbFirestore
+            .collection("userpoints")
+            .document(currentUserEmail)
+            .collection("workInProgress")
+            .document(projectName).update("description", "")
+    }
 }
