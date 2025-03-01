@@ -1,5 +1,6 @@
 package com.example.HungaryGo.data.repository
 
+import android.util.Log
 import com.example.HungaryGo.LocationDescription
 import com.example.HungaryGo.MakerLocationPackData
 import com.google.android.gms.maps.model.LatLng
@@ -69,12 +70,19 @@ class MakerRepository {
         }
     }
 
+    //új projekt hozzáadása Firestoreba
     fun addUsersProject(projectName: String){
         val currentUserEmail = auth.currentUser?.email.toString()
         dbFirestore
             .collection("userpoints")
             .document(currentUserEmail)
             .collection("workInProgress")
-            .document(projectName).update("description", "")
+            .document(projectName).set(mapOf("description" to ""))
+            .addOnSuccessListener {
+                Log.d("MakerRepository", "Sikeres hozzáadás")
+            }
+            .addOnFailureListener{ e ->
+                Log.e("MakerRepository", "Siktelen hozzáadás", e)
+            }
     }
 }

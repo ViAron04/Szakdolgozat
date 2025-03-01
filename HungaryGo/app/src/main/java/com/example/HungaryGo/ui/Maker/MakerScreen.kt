@@ -219,9 +219,9 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
         saveButton.setOnClickListener{
             if(lpName.text.toString() != "" && lpName.text != null){
-                /*viewModel.addUserProject(lpName.text.toString())
+                viewModel.addUserProject(lpName.text.toString())
                 dialog.dismiss()
-                openedDialog?.dismiss()*/
+                openedDialog?.dismiss()
             }
             else{
                 Toast.makeText(this, "Nem adtál meg nevet!", Toast.LENGTH_SHORT).show()
