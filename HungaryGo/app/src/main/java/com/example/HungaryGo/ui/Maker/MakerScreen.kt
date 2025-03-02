@@ -3,12 +3,14 @@ package com.example.HungaryGo.ui.Maker
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.location.Location
+import android.util.Log
 import android.view.LayoutInflater
 import com.google.android.gms.location.LocationRequest
 
@@ -19,6 +21,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -27,6 +30,7 @@ import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.example.HungaryGo.MakerLocationPackData
 import com.example.HungaryGo.R
 import com.example.HungaryGo.ui.Main.MainScreen
@@ -43,7 +47,9 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.launch
+import org.w3c.dom.Text
 
 class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
@@ -91,15 +97,39 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        lifecycleScope.launch {
-            showLoading(true)
-            viewModel.getUsersProjects()
-            showLoading(false)
-        }
+        viewModel.getUsersProjects()
+
+        showLoading(true)
 
         viewModel.usersProjectsList.observe(this, Observer { result ->
             showMakerProjectsDialog()
         })
+
+        val bottomSheet = findViewById<View>(R.id.bottomSheet)
+        val arrowButton = findViewById<ImageView>(R.id.arrow)
+        val recyclerView = findViewById<RecyclerView>(R.id.locationsDataList)
+
+        val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        bottomSheetBehavior.isHideable = false
+        bottomSheetBehavior.peekHeight = 160 // látható rész
+
+    bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+
+        try {
+            arrowButton.setOnClickListener {
+                if(bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED){
+                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                    arrowButton.setImageResource(android.R.drawable.arrow_up_float)
+                }
+                else{
+                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                    arrowButton.setImageResource(android.R.drawable.arrow_down_float)
+                }
+            }
+        }
+        catch (e: Exception){
+            Log.e("MakerScreen", "Hiba a listánál: ", e)
+        }
 
 
     }
@@ -127,7 +157,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        showMakerProjectsDialog()
+        //showMakerProjectsDialog()
 
     }
     override fun onMapReady(googleMap: GoogleMap) {
@@ -190,6 +220,12 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                     lpName.text = locationPack?.name
                     lpLocationCount.text = "Helyszínek száma: ${locationPack?.locations?.size.toString()}"
 
+                    view.setOnClickListener{
+                        val headerTitle = findViewById<TextView>(R.id.headerTitle)
+                        headerTitle.text = lpName.text
+                        dialog.dismiss()
+                    }
+
                     return view
                 }
             }
@@ -235,12 +271,13 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         dialog.show()
     }
 
+
     fun showLoading(isVisible: Boolean){
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.loading)
         dialog.setCancelable(false)
         val progressBar = dialog.findViewById<ProgressBar>(R.id.progressBar)
-        if(isVisible){
+
             dialog.window?.apply {
                 // dialog háttere átlátszó
                 setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -251,8 +288,8 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             }
             progressBar.visibility = View.VISIBLE
             dialog.show()
-        }
-        else{
+
+        viewModel.usersProjectsList.observe(this, Observer { result ->
             dialog.window?.apply {
                 // Dim hátteret engedélyez
                 addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
@@ -263,7 +300,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             }
             progressBar.visibility = View.GONE
             dialog.dismiss()
-        }
+        })
     }
 
     fun backToMainScreen() {

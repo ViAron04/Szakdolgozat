@@ -22,65 +22,76 @@
 
     </FrameLayout>
 
+    <!-- Csak LinearLyaout-on kívül működik, dinamikusan változó kinézetű elemek kezeléséhez -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:gravity="bottom">
+        android:gravity="top">
 
-
-            <Button
-                android:id="@+id/addMarker"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="16dp"
-                android:onClick="addmarker"
-                android:text="Helyszín hozzáadása" />
-
-
-    <LinearLayout
-        android:id="@+id/bottomSheet"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:background="@android:color/white"
-        android:orientation="vertical"
-        android:elevation="8dp"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
-
-        <LinearLayout
-            android:id="@+id/header"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:orientation="horizontal"
-            android:background="@color/grey"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Lista"
-                android:textColor="@android:color/white"
-                android:textSize="18sp" />
-
-            <ImageView
-                android:id="@+id/arrow"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@android:drawable/arrow_up_float"
-                app:tint="@android:color/white"/>
-
-
-        </LinearLayout>
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/locationsDataList"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+        <Button
+            android:id="@+id/addMarker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:onClick="addmarker"
+            android:text="Helyszín hozzáadása" />
 
     </LinearLayout>
-    </LinearLayout>
+
+
+
+
+            <LinearLayout
+                android:id="@+id/bottomSheet"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:minHeight="60dp"
+                android:background="@android:color/white"
+                android:orientation="vertical"
+                android:elevation="8dp"
+                app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+                <LinearLayout
+                    android:id="@+id/header"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:orientation="horizontal"
+                    android:background="@color/grey"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/headerTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Lista"
+                        android:gravity="center"
+                        android:textColor="@android:color/white"
+                        android:textSize="20sp" />
+
+                    <ImageView
+                        android:id="@+id/arrow"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/arrow_up_float"
+                        app:tint="@android:color/white"/>
+
+
+                </LinearLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/locationsDataList"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"/>
+
+            </LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 
 
