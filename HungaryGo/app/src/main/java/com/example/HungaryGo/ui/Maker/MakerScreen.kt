@@ -3,14 +3,12 @@ package com.example.HungaryGo.ui.Maker
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.location.Location
-import android.util.Log
 import android.view.LayoutInflater
 import com.google.android.gms.location.LocationRequest
 
@@ -29,8 +27,9 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.HungaryGo.MakerLocationDescription
 import com.example.HungaryGo.MakerLocationPackData
 import com.example.HungaryGo.R
 import com.example.HungaryGo.ui.Main.MainScreen
@@ -48,8 +47,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import kotlinx.coroutines.launch
-import org.w3c.dom.Text
 
 class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
@@ -68,7 +65,8 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maker)
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
+        fusedLocationClient =
+            LocationServices.getFusedLocationProviderClient(applicationContext) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
         getCurrentLocationUser()
 
         var currentMarker: Marker? = null
@@ -86,9 +84,11 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
                     currentLocation = location
                     val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
-                    val icon = BitmapDescriptorFactory.fromResource(R.drawable.szemuveges_atmeneti)
+                    val icon = BitmapDescriptorFactory.fromResource(R.drawable.usericondemo)
 
-                    currentMarker = mGoogleMap?.addMarker(MarkerOptions().position(latLng).title("Szerénységem").icon(icon))!!
+                    currentMarker = mGoogleMap?.addMarker(
+                        MarkerOptions().position(latLng).title("Szerénységem").icon(icon)
+                    )!!
 
 
                     val newLatLng = LatLng(location.latitude, location.longitude)
@@ -99,7 +99,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
         viewModel.getUsersProjects()
 
-        showLoading(true)
+        showLoading()
 
         viewModel.usersProjectsList.observe(this, Observer { result ->
             showMakerProjectsDialog()
@@ -113,26 +113,54 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         bottomSheetBehavior.isHideable = false
         bottomSheetBehavior.peekHeight = 160 // látható rész
 
-    bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
 
-        try {
-            arrowButton.setOnClickListener {
-                if(bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED){
-                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-                    arrowButton.setImageResource(android.R.drawable.arrow_up_float)
-                }
-                else{
-                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-                    arrowButton.setImageResource(android.R.drawable.arrow_down_float)
-                }
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        arrowButton.setOnClickListener {
+            if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
+                bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                arrowButton.setImageResource(android.R.drawable.arrow_up_float)
+            } else {
+                bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                arrowButton.setImageResource(android.R.drawable.arrow_down_float)
             }
         }
-        catch (e: Exception){
-            Log.e("MakerScreen", "Hiba a listánál: ", e)
+
+        viewModel.currentProject.observe(this, Observer { result ->
+            recyclerView.layoutManager = LinearLayoutManager(this)
+            val recycleViewAdapter = result.locations
+            recyclerView.adapter = RecycleViewAdapter(recycleViewAdapter)
+        })
+    }
+
+    //Adapter a recycleView-hoz, mivel az saját konstruktort igényel, nem jó, ami a listához kell
+    class RecycleViewAdapter(
+        private val locations: MutableList<MakerLocationDescription?>?
+    ) : RecyclerView.Adapter<RecycleViewAdapter.MakerLocationViewHolder>() {
+
+        class MakerLocationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val lName: EditText = itemView.findViewById(R.id.lName)
+            val lDescription: EditText = itemView.findViewById(R.id.lDescription)
+            val lQuestion: EditText = itemView.findViewById(R.id.lQuestion)
+            val lAnswer: EditText = itemView.findViewById(R.id.lAnswer)
         }
 
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MakerLocationViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.maker_recycle_view_list_element, parent, false)
+            return MakerLocationViewHolder(view)
+        }
 
+        override fun onBindViewHolder(holder: MakerLocationViewHolder, position: Int) {
+            val location = locations?.get(position)
+            holder.lName.setText(location?.name)
+            holder.lDescription.setText(location?.description)
+            holder.lQuestion.setText(location?.question)
+            holder.lAnswer.setText(location?.answer)
+        }
+
+        override fun getItemCount(): Int = locations!!.size
     }
+
 
     private fun getCurrentLocationUser() {
         //engedély ellenőrzése, haa nincsenek meg, engedélyt kér
@@ -223,6 +251,8 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                     view.setOnClickListener{
                         val headerTitle = findViewById<TextView>(R.id.headerTitle)
                         headerTitle.text = lpName.text
+                        showLoading()
+                        viewModel.setCurrentProject(lpName.text.toString())
                         dialog.dismiss()
                     }
 
@@ -256,6 +286,8 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         saveButton.setOnClickListener{
             if(lpName.text.toString() != "" && lpName.text != null){
                 viewModel.addUserProject(lpName.text.toString())
+                showLoading()
+                viewModel.setCurrentProject(lpName.text.toString())
                 dialog.dismiss()
                 openedDialog?.dismiss()
             }
@@ -272,7 +304,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
-    fun showLoading(isVisible: Boolean){
+    fun showLoading(){
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.loading)
         dialog.setCancelable(false)
@@ -289,14 +321,23 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             progressBar.visibility = View.VISIBLE
             dialog.show()
 
-        viewModel.usersProjectsList.observe(this, Observer { result ->
+
+        viewModel.usersProjectsList.observe(this, Observer {
             dialog.window?.apply {
                 // Dim hátteret engedélyez
                 addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
                 // 0.0f -> nincs elsötétítés, 1.0f -> teljesen fekete
                 setDimAmount(0f)
-
-
+            }
+            progressBar.visibility = View.GONE
+            dialog.dismiss()
+        })
+        viewModel.currentProject.observe(this, Observer {
+            dialog.window?.apply {
+                // Dim hátteret engedélyez
+                addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                // 0.0f -> nincs elsötétítés, 1.0f -> teljesen fekete
+                setDimAmount(0f)
             }
             progressBar.visibility = View.GONE
             dialog.dismiss()

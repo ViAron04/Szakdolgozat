@@ -2,6 +2,7 @@ package com.example.HungaryGo.data.repository
 
 import android.util.Log
 import com.example.HungaryGo.LocationDescription
+import com.example.HungaryGo.MakerLocationDescription
 import com.example.HungaryGo.MakerLocationPackData
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
@@ -9,7 +10,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.GeoPoint
 import kotlinx.coroutines.tasks.await
 
 
@@ -39,24 +39,25 @@ class MakerRepository {
                     val locationsRef = documentRef.document(makerLP.id).collection("locations")
                     val locationSanpshot = locationsRef.get().await()
                     if (!locationSanpshot.isEmpty) {
-                        val locationData: MutableMap<String, LocationDescription?> = mutableMapOf()
+                        val locationData: MutableList<MakerLocationDescription?> = mutableListOf()
                         for (locationMakerData in locationSanpshot) {
-                            val locationDescription: LocationDescription = LocationDescription()
+                            val makerLocationDescription: MakerLocationDescription = MakerLocationDescription()
 
-                            locationDescription.description =
+                            makerLocationDescription.name = locationMakerData.id
+                            makerLocationDescription.description =
                                 locationMakerData.getString("Description")
-                            locationDescription.markerOptions = MarkerOptions().position(
+                            makerLocationDescription.markerOptions = MarkerOptions().position(
                                 LatLng(
                                     locationMakerData.getGeoPoint("Marker")!!.latitude,
                                     locationMakerData.getGeoPoint("Marker")!!.longitude,
                                 )
                             )
                             if (locationMakerData.getBoolean("IsQuestion") == true) {
-                                locationDescription.answer = locationMakerData.getString("Answer")
-                                locationDescription.question =
+                                makerLocationDescription.answer = locationMakerData.getString("Answer")
+                                makerLocationDescription.question =
                                     locationMakerData.getString("Question")
                             }
-                            locationData[locationMakerData.id] = locationDescription
+                            locationData.add(makerLocationDescription)
                         }
                         makerLocationPackData.locations = locationData
                     }

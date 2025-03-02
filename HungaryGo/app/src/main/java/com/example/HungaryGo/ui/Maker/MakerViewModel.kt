@@ -13,6 +13,9 @@ class MakerViewModel: ViewModel() {
     private val _usersProjectsList = MutableLiveData<MutableList<MakerLocationPackData>?>()
     val usersProjectsList: LiveData<MutableList<MakerLocationPackData>?> get() = _usersProjectsList
 
+    private val _currentProject = MutableLiveData<MakerLocationPackData>()
+    val currentProject: LiveData<MakerLocationPackData> get() = _currentProject
+
     private val repository: MakerRepository = MakerRepository()
 
     fun getUsersProjects(){
@@ -28,5 +31,9 @@ class MakerViewModel: ViewModel() {
         viewModelScope.launch {
             repository.addUsersProject(projectName)
         }
+    }
+
+    fun setCurrentProject(projectName: String){
+        _currentProject.value = usersProjectsList.value?.find { it.name == projectName }
     }
 }

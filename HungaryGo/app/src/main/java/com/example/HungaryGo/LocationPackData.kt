@@ -43,8 +43,17 @@ data class FiltersData(
 
 data class MakerLocationPackData(
     var name: String = "",
-    var locations: MutableMap<String, LocationDescription?> = mutableMapOf(),
+    var locations: MutableList<MakerLocationDescription?> = mutableListOf(),
     var description: String = "",
     var area: String = "",
     var origin: String = "community"
 )
+
+data class MakerLocationDescription (
+    @Transient
+    var name: String? = null,
+    var markerOptions: MarkerOptions? = null,
+    var description: String? = null,
+    var question: String? = null,
+    var answer: String? = null,
+) : Serializable
