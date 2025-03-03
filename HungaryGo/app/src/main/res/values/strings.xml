@@ -15,4 +15,5 @@
     <string name="default_web_client_id">522161200670-qsqphffs5hdlgj14eu862f4smd3jji54.apps.googleusercontent.com</string>
     <string name="szep">Nagyon szép!</string>
     <string name="osszes">Összes</string>
+    <string name="helysz_n_neve">Helyszín neve</string>
 </resources>

@@ -90,7 +90,6 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                         MarkerOptions().position(latLng).title("Szerénységem").icon(icon)
                     )!!
 
-
                     val newLatLng = LatLng(location.latitude, location.longitude)
                     mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLng(newLatLng)) //a kamera ezáltal követi a felhasználót
                 }
@@ -129,6 +128,11 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             recyclerView.layoutManager = LinearLayoutManager(this)
             val recycleViewAdapter = result.locations
             recyclerView.adapter = RecycleViewAdapter(recycleViewAdapter)
+
+            for (location in result.locations)
+            {
+                mGoogleMap?.addMarker(location?.markerOptions!!)
+            }
         })
     }
 
@@ -217,13 +221,44 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun addmarker(view: View) {
-        val actualMarker: MarkerOptions = MarkerOptions()
-            .position(LatLng(currentLocation.latitude, currentLocation.longitude))
-            .title("Új marker")
-            .draggable(false)
+        var markerTitle: String
 
-        mGoogleMap?.addMarker(actualMarker)
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.maker_location_name_dialog)
+        dialog.setCancelable(false)
+
+        val lpName = dialog.findViewById<EditText>(R.id.lpName)
+        val saveButton = dialog.findViewById<Button>(R.id.saveButton)
+        val cancelButton = dialog.findViewById<Button>(R.id.cancelButton)
+
+        saveButton.setOnClickListener{
+            if(lpName == null || lpName.toString() == "")
+            {
+                Toast.makeText(this, "Nem adtál meg nevet!", Toast.LENGTH_SHORT).show()
+            }
+            else
+            {
+                markerTitle = lpName.text.toString()
+
+                val actualMarker: MarkerOptions = MarkerOptions()
+                    .position(LatLng(currentLocation.latitude, currentLocation.longitude))
+                    .title(markerTitle)
+                    .draggable(false)
+
+                mGoogleMap?.addMarker(actualMarker)
+
+                viewModel.addNewLocationToCurrentProject(markerTitle, actualMarker)
+                dialog.dismiss()
+            }
+        }
+
+        cancelButton.setOnClickListener{
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
+
 
 
     fun showMakerProjectsDialog(){

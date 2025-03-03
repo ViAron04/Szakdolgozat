@@ -4,9 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.HungaryGo.MakerLocationDescription
 import com.example.HungaryGo.MakerLocationPackData
 import com.example.HungaryGo.data.repository.MakerRepository
 import com.example.HungaryGo.data.repository.UserRepository
+import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.coroutines.launch
 
 class MakerViewModel: ViewModel() {
@@ -36,4 +38,10 @@ class MakerViewModel: ViewModel() {
     fun setCurrentProject(projectName: String){
         _currentProject.value = usersProjectsList.value?.find { it.name == projectName }
     }
+
+    fun addNewLocationToCurrentProject(name: String, markerOptions: MarkerOptions){
+        _currentProject.value?.locations?.add(MakerLocationDescription(name, markerOptions))
+        _currentProject.value = _currentProject.value
+    }
+
 }
