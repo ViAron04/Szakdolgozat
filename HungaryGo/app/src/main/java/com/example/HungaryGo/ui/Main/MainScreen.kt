@@ -9,6 +9,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.location.Location
 import com.google.android.gms.location.LocationRequest
@@ -18,11 +20,13 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.animation.LinearInterpolator
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.RatingBar
 import android.widget.TextView
 import android.widget.Toast
@@ -30,6 +34,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -146,6 +151,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         getCurrentLocationUser()
         viewModel.loadLocationPacks()
 
+        showLoading()
 
        // fusedLocationClient =
        //     LocationServices.getFusedLocationProviderClient(this) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
@@ -782,5 +788,35 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     // a currentLocationPack-et Null-ra állítja
     fun currentLocationPackToNull(view: View) {
         viewModel.currentLocationPackToNull()
+    }
+
+    fun showLoading(){
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.loading)
+        dialog.setCancelable(false)
+        val progressBar = dialog.findViewById<ProgressBar>(R.id.progressBar)
+
+        dialog.window?.apply {
+            // dialog háttere átlátszó
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+            // dialogon kívüli terület sötétettbé tétele
+            addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            setDimAmount(0.5f)
+        }
+        progressBar.visibility = View.VISIBLE
+        dialog.show()
+
+
+        viewModel.locationPacksData.observe(this, Observer {
+            dialog.window?.apply {
+                // Dim hátteret engedélyez
+                addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                // 0.0f -> nincs elsötétítés, 1.0f -> teljesen fekete
+                setDimAmount(0f)
+            }
+            progressBar.visibility = View.GONE
+            dialog.dismiss()
+        })
     }
 }
