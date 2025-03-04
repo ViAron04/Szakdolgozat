@@ -30,6 +30,7 @@ import android.widget.ProgressBar
 import android.widget.RatingBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
@@ -51,6 +52,7 @@ import com.example.HungaryGo.ui.Maker.MakerScreen
 import com.example.HungaryGo.ui.Options.OptionsScreen
 import com.example.HungaryGo.ui.SignIn.SignInScreen
 import com.example.HungaryGo.ui.GloryWall.GloryWallScreen
+import com.example.HungaryGo.ui.Maker.MakerViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -119,6 +121,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var binding: ActivityMainScreenBinding
     private lateinit var drawerLayout: DrawerLayout
     //private val viewModel: MainViewModel by viewModels()
+    private val makerViewModel: MakerViewModel by viewModels()
 
     private var currentMarker: Marker? = null
     private var follows: Boolean = false
@@ -819,4 +822,8 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             dialog.dismiss()
         })
     }
+
+
+
+
 }

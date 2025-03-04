@@ -1,5 +1,6 @@
 package com.example.HungaryGo.ui.Maker
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -42,6 +43,10 @@ class MakerViewModel: ViewModel() {
     fun addNewLocationToCurrentProject(name: String, markerOptions: MarkerOptions){
         _currentProject.value?.locations?.add(MakerLocationDescription(name, markerOptions))
         _currentProject.value = _currentProject.value
+    }
+
+    fun saveProjectChanges(context: Context){
+        repository.saveProjectChanges(context ,currentProject.value!!)
     }
 
 }

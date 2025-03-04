@@ -84,6 +84,7 @@
 
 
                 </LinearLayout>
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/locationsDataList"
                     android:layout_width="match_parent"
@@ -97,7 +98,16 @@
                     android:text="Mentés"/>
 
             </LinearLayout>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        <!--
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/locationsDataList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:layout_anchor="@+id/bottomSheet"
+            app:layout_anchorGravity="center" /> -->
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 
 

@@ -47,6 +47,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlin.coroutines.jvm.internal.CompletedContinuation.context
 
 class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
@@ -309,6 +310,18 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         openedDialog = dialog
         dialog.show()
     }
+
+    override fun onPause() {
+        viewModel.saveProjectChanges()
+        super.onPause()
+    }
+
+    override fun onStop() {
+        viewModel.saveProjectChanges()
+        super.onStop()
+    }
+
+
 
     private fun showMakerLevelNameDialog() {
         val dialog = Dialog(this)
