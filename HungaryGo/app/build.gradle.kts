@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.HungaryGo"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.kotlin_gyakorlas"
@@ -63,6 +63,8 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx:21.0.1")
     implementation("androidx.activity:activity:1.9.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
+    implementation("androidx.work:work-runtime-ktx:2.10.0") //WorkerManager
+    implementation("com.google.code.gson:gson:2.8.8") //Gsson
 
     kapt("com.github.bumptech.glide:compiler:4.15.1")
     testImplementation("junit:junit:4.13.2")

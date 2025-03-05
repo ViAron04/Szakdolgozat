@@ -47,7 +47,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import kotlin.coroutines.jvm.internal.CompletedContinuation.context
 
 class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
@@ -312,15 +311,19 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onPause() {
-        viewModel.saveProjectChanges()
+        viewModel.saveProjectChanges(this)
         super.onPause()
     }
 
     override fun onStop() {
-        viewModel.saveProjectChanges()
+        viewModel.saveProjectChanges(this)
         super.onStop()
     }
 
+    override fun onDestroy() {
+        viewModel.saveProjectChanges(this)
+        super.onDestroy()
+    }
 
 
     private fun showMakerLevelNameDialog() {
@@ -390,9 +393,26 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             progressBar.visibility = View.GONE
             dialog.dismiss()
         })
+        viewModel.isSaveFinished.observe(this, Observer { result ->
+            if(result == true){
+                dialog.window?.apply {
+                    // Dim hátteret engedélyez
+                    addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                    // 0.0f -> nincs elsötétítés, 1.0f -> teljesen fekete
+                    setDimAmount(0f)
+                }
+                progressBar.visibility = View.GONE
+                dialog.dismiss()
+            }
+        })
     }
 
     fun backToMainScreen() {
         startActivity(Intent(this@MakerScreen, MainScreen::class.java))
+    }
+
+    fun saveProjectData(view: View) {
+        showLoading()
+        viewModel.saveProjectChanges(this)
     }
 }

@@ -43,7 +43,8 @@ class MakerRepository {
                     if (!locationSanpshot.isEmpty) {
                         val locationData: MutableList<MakerLocationDescription?> = mutableListOf()
                         for (locationMakerData in locationSanpshot) {
-                            val makerLocationDescription: MakerLocationDescription = MakerLocationDescription()
+                            val makerLocationDescription: MakerLocationDescription =
+                                MakerLocationDescription()
 
                             makerLocationDescription.name = locationMakerData.id
                             makerLocationDescription.description =
@@ -55,7 +56,8 @@ class MakerRepository {
                                 )
                             ).title(locationMakerData.id)
                             if (locationMakerData.getBoolean("IsQuestion") == true) {
-                                makerLocationDescription.answer = locationMakerData.getString("Answer")
+                                makerLocationDescription.answer =
+                                    locationMakerData.getString("Answer")
                                 makerLocationDescription.question =
                                     locationMakerData.getString("Question")
                             }
@@ -74,7 +76,7 @@ class MakerRepository {
     }
 
     //új projekt hozzáadása Firestoreba
-    fun addUsersProject(projectName: String){
+    fun addUsersProject(projectName: String) {
         dbFirestore
             .collection("userpoints")
             .document(currentUserEmail)
@@ -83,105 +85,110 @@ class MakerRepository {
             .addOnSuccessListener {
                 Log.d("MakerRepository", "Sikeres hozzáadás")
             }
-            .addOnFailureListener{ e ->
+            .addOnFailureListener { e ->
                 Log.e("MakerRepository", "Siktelen hozzáadás", e)
             }
     }
 
-    fun saveProjectChanges(coontext: Context, makerLocationPackData: MakerLocationPackData){
-        val documentRef = dbFirestore
-            .collection("userpoints")
-            .document(currentUserEmail)
-            .collection("workInProgress")
-            .document(makerLocationPackData.name)
+    suspend fun saveProjectChanges(makerLocationPackData: MakerLocationPackData) {
+        try {
+            val documentRef = dbFirestore
+                .collection("userpoints")
+                .document(currentUserEmail)
+                .collection("workInProgress")
+                .document(makerLocationPackData.name)
 
-        val updates = mutableMapOf<String, Any>()
-        documentRef.get()
-            .addOnSuccessListener { docSnapshot ->
-                if(docSnapshot.getString("area") != makerLocationPackData.area)
-                {
-                    updates["area"] = makerLocationPackData.area
+            val updates = mutableMapOf<String, Any>()
+            val docSnapshot = documentRef.get().await()
+
+            if (docSnapshot.getString("area") != makerLocationPackData.area) {
+                updates["area"] = makerLocationPackData.area
+            }
+            if (docSnapshot.getString("description") != makerLocationPackData.description) {
+                updates["description"] = makerLocationPackData.description
+            }
+            if (!updates.isEmpty()) {
+                documentRef.update(updates).await()
+            }
+
+            val locationsRef = documentRef.collection("locations")
+            val locationsSnapshot = locationsRef.get().await()
+
+            val locationNameList: MutableList<String> = mutableListOf()
+
+            for (locationData in locationsSnapshot) {
+                locationNameList.add(locationData.id.toString())
+                val currrentMakerLocationPackDataLocation =
+                    makerLocationPackData.locations.find { it?.name == locationData.id.toString() }
+
+                if (currrentMakerLocationPackDataLocation == null) {
+                    locationData.reference.delete()
+                        .addOnSuccessListener {
+                            Log.d("MakerRepository", "${locationData.id.toString()} törölve")
+                        }.addOnFailureListener { e ->
+                            Log.e(
+                                "MakerRepository",
+                                "${locationData.id.toString()} törölése sikertelen: ",
+                                e
+                            )
+                        }
+                    continue
                 }
-                if(docSnapshot.getString("description") != makerLocationPackData.description)
-                {
-                    updates["description"] = makerLocationPackData.description
+                if (locationData.getString("Description") != currrentMakerLocationPackDataLocation.description) {
+                    locationData.reference.update(
+                        "Description",
+                        currrentMakerLocationPackDataLocation.description
+                    ).await()
                 }
-                if(!updates.isEmpty()){
-                    documentRef.update(updates)
-                }
-
-                val locationsRef = documentRef.collection("locations")
-                locationsRef.get().addOnSuccessListener { locationsSnapshot ->
-                    val locationNameList: MutableList<String> = mutableListOf()
-
-                    for (locationData in locationsSnapshot)
-                    {
-                        locationNameList.add(locationData.id.toString())
-                        val currrentMakerLocationPackDataLocation = makerLocationPackData.locations.find { it?.name == locationData.id.toString()}
-
-                        if(currrentMakerLocationPackDataLocation == null)
-                        {
-                            locationData.reference.delete()
-                                .addOnSuccessListener {
-                                Log.d("MakerRepository", "${locationData.id.toString()} törölve")
-                                }.addOnFailureListener{ e ->
-                                    Log.e("MakerRepository", "${locationData.id.toString()} törölése sikertelen: ", e)
-                                }
-                            continue
-                        }
-                        if(locationData.getString("Description") != currrentMakerLocationPackDataLocation.description)
-                        {
-                            locationData.reference.update("Description", currrentMakerLocationPackDataLocation.description)
-                        }
-                        if(locationData.getBoolean("IsQuestion") == true)
-                        {
-                            if(locationData.getString("Question") != currrentMakerLocationPackDataLocation.question)
-                            {
-                                locationData.reference.update("Question", currrentMakerLocationPackDataLocation.question)
-                            }
-                            if(locationData.getString("Answer") != currrentMakerLocationPackDataLocation.answer)
-                            {
-                                locationData.reference.update("Answer", currrentMakerLocationPackDataLocation.answer)
-                            }
-                        }
-                        val markerData = currrentMakerLocationPackDataLocation.markerOptions?.position
-                        if(locationData.getGeoPoint("Marker")?.latitude != markerData?.latitude
-                            || locationData.getGeoPoint("Marker")?.longitude != markerData?.longitude)
-                        {
-                            val newGeoPoint: GeoPoint = GeoPoint(markerData?.latitude!!, markerData?.longitude!!)
-                            locationData.reference.update("Marker", newGeoPoint)
-                        }
+                if (locationData.getBoolean("IsQuestion") == true) {
+                    if (locationData.getString("Question") != currrentMakerLocationPackDataLocation.question) {
+                        locationData.reference.update(
+                            "Question",
+                            currrentMakerLocationPackDataLocation.question
+                        ).await()
                     }
+                    if (locationData.getString("Answer") != currrentMakerLocationPackDataLocation.answer) {
+                        locationData.reference.update(
+                            "Answer",
+                            currrentMakerLocationPackDataLocation.answer
+                        ).await()
+                    }
+                }
+                val markerData = currrentMakerLocationPackDataLocation.markerOptions?.position
+                if (locationData.getGeoPoint("Marker")?.latitude != markerData?.latitude
+                    || locationData.getGeoPoint("Marker")?.longitude != markerData?.longitude
+                ) {
+                    val newGeoPoint: GeoPoint =
+                        GeoPoint(markerData?.latitude!!, markerData?.longitude!!)
+                    locationData.reference.update("Marker", newGeoPoint).await()
+                }
+            }
 
-                    if(locationNameList.size != locationsSnapshot.size()){
-                        for (locationData in makerLocationPackData.locations) {
-                            if(!locationNameList.contains(locationData?.name)){
-                                val newData = hashMapOf(
-                                    "name" to locationData?.name,
-                                    "Description" to locationData?.description,
-                                    if(locationData?.question != ""){
-                                        "IsQuestion" to true
-                                        "Question" to locationData?.question
-                                        "Answer" to locationData?.answer
-                                    }
-                                    else{
-                                        "IsQuestion" to false
-                                    },
-                                    // Marker hozzáadása, feltételezve, hogy markerOptions nem lehet null
-                                    "Marker" to GeoPoint(
-                                        locationData?.markerOptions?.position?.latitude ?: 0.0,
-                                        locationData?.markerOptions?.position?.longitude ?: 0.0
-                                    )
-                                )
-                                locationsRef.add(newData)
-                            }
-                        }
+            //TODO if-hez más megoldást találni, mert ha kitörlök egyet é hozzáadok, nem működik
+            if (locationNameList.size != makerLocationPackData.locations.size) {
+                for (locationData in makerLocationPackData.locations) {
+                    if (!locationNameList.contains(locationData?.name)) {
+                        val newData = hashMapOf(
+                            "Description" to locationData?.description,
+                            if (locationData?.question != "" && locationData?.question != null) {
+                                "IsQuestion" to true
+                                "Question" to locationData.question
+                                "Answer" to locationData.answer
+                            } else {
+                                "IsQuestion" to false
+                            },
+                            // Marker hozzáadása, feltételezve, hogy markerOptions nem lehet null
+                            "Marker" to GeoPoint(
+                                locationData?.markerOptions?.position?.latitude ?: 0.0,
+                                locationData?.markerOptions?.position?.longitude ?: 0.0
+                            )
+                        )
+                        locationsRef.document(locationData?.name!!).set(newData).await()
                     }
                 }
             }
-            .addOnFailureListener{ e ->
-                Log.e("MakerRepository", "Siktelen mentés", e)
-            }
-
+        } catch (e: Exception) {
+            Log.e("MakerRepository", "Hiba a saveProjectChanges-ben: ", e)
+        }
     }
 }

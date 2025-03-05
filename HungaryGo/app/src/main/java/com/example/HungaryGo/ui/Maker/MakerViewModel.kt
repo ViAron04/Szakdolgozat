@@ -5,11 +5,19 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.example.HungaryGo.MakerLocationDescription
 import com.example.HungaryGo.MakerLocationPackData
 import com.example.HungaryGo.data.repository.MakerRepository
 import com.example.HungaryGo.data.repository.UserRepository
+import com.example.HungaryGo.data.worker.SaveProjectWorker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.gson.Gson
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MakerViewModel: ViewModel() {
@@ -18,6 +26,9 @@ class MakerViewModel: ViewModel() {
 
     private val _currentProject = MutableLiveData<MakerLocationPackData>()
     val currentProject: LiveData<MakerLocationPackData> get() = _currentProject
+
+    private val _isSaveFinished = MutableLiveData<Boolean>()
+    val isSaveFinished: LiveData<Boolean> get() = _isSaveFinished
 
     private val repository: MakerRepository = MakerRepository()
 
@@ -46,7 +57,27 @@ class MakerViewModel: ViewModel() {
     }
 
     fun saveProjectChanges(context: Context){
-        repository.saveProjectChanges(context ,currentProject.value!!)
+        /*
+        val makerLocationPackData = currentProject.value!!
+        val projectDataJson = Gson().toJson(makerLocationPackData)
+
+        val inputData = workDataOf(
+            "projectData" to projectDataJson,
+        )
+
+        val saveProjectWorkRequest = OneTimeWorkRequestBuilder<SaveProjectWorker>()
+            .setInputData(inputData)
+            .build()
+
+        WorkManager.getInstance(context).enqueue(saveProjectWorkRequest)*/
+
+        viewModelScope.launch {
+            repository.saveProjectChanges(currentProject.value!!)
+            _isSaveFinished.value = true
+            delay(10_000L)
+            _isSaveFinished.value = false
+        }
+
     }
 
 }
