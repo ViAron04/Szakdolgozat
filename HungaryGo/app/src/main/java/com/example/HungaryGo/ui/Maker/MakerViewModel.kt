@@ -74,7 +74,7 @@ class MakerViewModel: ViewModel() {
         viewModelScope.launch {
             repository.saveProjectChanges(currentProject.value!!)
             _isSaveFinished.value = true
-            delay(10_000L)
+            delay(30_00L)
             _isSaveFinished.value = false
         }
 

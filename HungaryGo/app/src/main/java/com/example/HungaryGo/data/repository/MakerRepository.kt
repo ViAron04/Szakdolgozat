@@ -164,8 +164,13 @@ class MakerRepository {
                 }
             }
 
+            val makerLocationPackDataLocations: MutableList<String> = mutableListOf()
+            for(locationData in makerLocationPackData.locations){
+                makerLocationPackDataLocations.add(locationData?.name!!)
+            }
+
             //TODO if-hez más megoldást találni, mert ha kitörlök egyet é hozzáadok, nem működik
-            if (locationNameList.size != makerLocationPackData.locations.size) {
+            if (locationNameList.toSet() != makerLocationPackDataLocations.toSet()) {
                 for (locationData in makerLocationPackData.locations) {
                     if (!locationNameList.contains(locationData?.name)) {
                         val newData = hashMapOf(

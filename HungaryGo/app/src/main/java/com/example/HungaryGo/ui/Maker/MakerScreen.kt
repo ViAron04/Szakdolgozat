@@ -9,6 +9,8 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.location.Location
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import com.google.android.gms.location.LocationRequest
 
@@ -156,10 +158,74 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
         override fun onBindViewHolder(holder: MakerLocationViewHolder, position: Int) {
             val location = locations?.get(position)
+            holder.lName.tag?.let { watcher ->
+                if(watcher is TextWatcher){
+                    holder.lName.removeTextChangedListener(watcher)
+                }
+            }
             holder.lName.setText(location?.name)
+
+            holder.lDescription.tag?.let { watcher ->
+                if(watcher is TextWatcher){
+                    holder.lDescription.removeTextChangedListener(watcher)
+                }
+            }
             holder.lDescription.setText(location?.description)
+
+            holder.lQuestion.tag?.let { watcher ->
+                if(watcher is TextWatcher){
+                    holder.lQuestion.removeTextChangedListener(watcher)
+                }
+            }
             holder.lQuestion.setText(location?.question)
+
+            holder.lAnswer.tag?.let { watcher ->
+                if(watcher is TextWatcher){
+                    holder.lAnswer.removeTextChangedListener(watcher)
+                }
+            }
             holder.lAnswer.setText(location?.answer)
+
+            val nameWatcher = object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    location?.name = s?.toString()
+                }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            }
+            holder.lName.addTextChangedListener(nameWatcher)
+            // A .tag mezőben eltároljuk, hogy később le tudjuk venni
+            holder.lName.tag = nameWatcher
+
+            val descWatcher = object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    location?.description = s?.toString()
+                }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            }
+            holder.lDescription.addTextChangedListener(descWatcher)
+            holder.lDescription.tag = descWatcher
+
+            val questionWatcher = object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    location?.question = s?.toString()
+                }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            }
+            holder.lQuestion.addTextChangedListener(questionWatcher)
+            holder.lQuestion.tag = questionWatcher
+
+            val answerWatcher = object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    location?.answer = s?.toString()
+                }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            }
+            holder.lAnswer.addTextChangedListener(answerWatcher)
+            holder.lAnswer.tag = answerWatcher
         }
 
         override fun getItemCount(): Int = locations!!.size
@@ -414,5 +480,16 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
     fun saveProjectData(view: View) {
         showLoading()
         viewModel.saveProjectChanges(this)
+    }
+
+    fun backToProjects(view: View) {
+        viewModel.saveProjectChanges(this)
+
+        showLoading()
+        viewModel.isSaveFinished.observe(this, Observer { result ->
+            if(result == true){
+                showMakerProjectsDialog()
+            }
+        })
     }
 }
