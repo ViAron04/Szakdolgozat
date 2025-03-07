@@ -27,7 +27,7 @@ class MakerViewModel: ViewModel() {
     private val _currentProject = MutableLiveData<MakerLocationPackData>()
     val currentProject: LiveData<MakerLocationPackData> get() = _currentProject
 
-    private val _isSaveFinished = MutableLiveData<Boolean>()
+    private val _isSaveFinished = MutableLiveData<Boolean>(false)
     val isSaveFinished: LiveData<Boolean> get() = _isSaveFinished
 
     private val repository: MakerRepository = MakerRepository()

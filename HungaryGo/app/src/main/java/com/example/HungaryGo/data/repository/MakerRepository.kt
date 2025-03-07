@@ -140,7 +140,7 @@ class MakerRepository {
                         currrentMakerLocationPackDataLocation.description
                     ).await()
                 }
-                if (locationData.getBoolean("IsQuestion") == true) {
+
                     if (locationData.getString("Question") != currrentMakerLocationPackDataLocation.question) {
                         locationData.reference.update(
                             "Question",
@@ -153,7 +153,21 @@ class MakerRepository {
                             currrentMakerLocationPackDataLocation.answer
                         ).await()
                     }
+
+
+                if (currrentMakerLocationPackDataLocation.answer  != "" && currrentMakerLocationPackDataLocation.answer != null
+                    && currrentMakerLocationPackDataLocation.question != "" && currrentMakerLocationPackDataLocation.question != null ){
+                    locationData.reference.update(
+                        "IsQuestion",
+                        true
+                    ).await()
+                } else{
+                    locationData.reference.update(
+                        "IsQuestion",
+                        false
+                    ).await()
                 }
+
                 val markerData = currrentMakerLocationPackDataLocation.markerOptions?.position
                 if (locationData.getGeoPoint("Marker")?.latitude != markerData?.latitude
                     || locationData.getGeoPoint("Marker")?.longitude != markerData?.longitude
@@ -173,21 +187,29 @@ class MakerRepository {
             if (locationNameList.toSet() != makerLocationPackDataLocations.toSet()) {
                 for (locationData in makerLocationPackData.locations) {
                     if (!locationNameList.contains(locationData?.name)) {
-                        val newData = hashMapOf(
-                            "Description" to locationData?.description,
-                            if (locationData?.question != "" && locationData?.question != null) {
-                                "IsQuestion" to true
-                                "Question" to locationData.question
-                                "Answer" to locationData.answer
+                        val newData = hashMapOf<String, Any?>(
+                            "Description" to locationData?.description)
+
+                            if (locationData?.answer != "" && locationData?.answer != null && locationData.question != "" && locationData.question != null ) {
+                                newData["IsQuestion"] = true
+                                newData["Question"] = locationData.question
+                                newData["Answer"] = locationData.answer
+                            } else if(locationData?.answer != "" && locationData?.answer != null) {
+                                newData["IsQuestion"] = false
+                                newData["Answer"] = locationData.answer
+                            } else if(locationData?.question != "" && locationData?.question != null) {
+                                newData["IsQuestion"] = false
+                                newData["Question"] = locationData.question
                             } else {
-                                "IsQuestion" to false
-                            },
+                                newData["IsQuestion"] = false
+                            }
+
                             // Marker hozzáadása, feltételezve, hogy markerOptions nem lehet null
-                            "Marker" to GeoPoint(
-                                locationData?.markerOptions?.position?.latitude ?: 0.0,
-                                locationData?.markerOptions?.position?.longitude ?: 0.0
-                            )
+                        newData["Marker"] = GeoPoint(
+                            locationData?.markerOptions?.position?.latitude ?: 0.0,
+                            locationData?.markerOptions?.position?.longitude ?: 0.0
                         )
+
                         locationsRef.document(locationData?.name!!).set(newData).await()
                     }
                 }

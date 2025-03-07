@@ -129,7 +129,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         viewModel.currentProject.observe(this, Observer { result ->
             recyclerView.layoutManager = LinearLayoutManager(this)
             val recycleViewAdapter = result.locations
-            recyclerView.adapter = RecycleViewAdapter(recycleViewAdapter)
+            recyclerView.adapter = RecycleViewAdapter(result,recycleViewAdapter)
 
             for (location in result.locations)
             {
@@ -140,8 +140,21 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
     //Adapter a recycleView-hoz, mivel az saját konstruktort igényel, nem jó, ami a listához kell
     class RecycleViewAdapter(
+        private val makerLocationPack: MakerLocationPackData,
         private val locations: MutableList<MakerLocationDescription?>?
-    ) : RecyclerView.Adapter<RecycleViewAdapter.MakerLocationViewHolder>() {
+    ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+        companion object {
+            private const val VIEW_TYPE_HEADER = 0
+            private const val VIEW_TYPE_ITEM = 1
+        }
+
+        class MakerLocationPackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val lpName: EditText = itemView.findViewById(R.id.lpName)
+            val lpDescription: EditText = itemView.findViewById(R.id.lpDescription)
+            val lpArea: EditText = itemView.findViewById(R.id.lpArea)
+        }
+
 
         class MakerLocationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val lName: EditText = itemView.findViewById(R.id.lName)
@@ -150,82 +163,104 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             val lAnswer: EditText = itemView.findViewById(R.id.lAnswer)
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MakerLocationViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.maker_recycle_view_list_element, parent, false)
-            return MakerLocationViewHolder(view)
+        override fun getItemViewType(position: Int): Int {
+            if (position == 0){
+                return VIEW_TYPE_HEADER
+            }else{
+                return VIEW_TYPE_ITEM
+            }
         }
 
-        override fun onBindViewHolder(holder: MakerLocationViewHolder, position: Int) {
-            val location = locations?.get(position)
-            holder.lName.tag?.let { watcher ->
-                if(watcher is TextWatcher){
-                    holder.lName.removeTextChangedListener(watcher)
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            return when (viewType) {
+                VIEW_TYPE_HEADER -> {
+                    val view = LayoutInflater.from(parent.context)
+                        .inflate(R.layout.maker_recycle_view_locationpack_list_element, parent, false)
+                    MakerLocationPackViewHolder(view)
+                }
+                else -> {
+                    val view = LayoutInflater.from(parent.context)
+                        .inflate(R.layout.maker_recycle_view_list_element, parent, false)
+                    MakerLocationViewHolder(view)
                 }
             }
-            holder.lName.setText(location?.name)
+        }
 
-            holder.lDescription.tag?.let { watcher ->
-                if(watcher is TextWatcher){
-                    holder.lDescription.removeTextChangedListener(watcher)
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            if (holder is MakerLocationPackViewHolder) {
+                // Például beállíthatod a headerTextet
+                //TODO megírni a locationPack részt
+            } else if (holder is MakerLocationViewHolder) {
+                val location = locations?.get(position)
+                holder.lName.tag?.let { watcher ->
+                    if(watcher is TextWatcher){
+                        holder.lName.removeTextChangedListener(watcher)
+                    }
                 }
-            }
-            holder.lDescription.setText(location?.description)
+                holder.lName.setText(location?.name)
 
-            holder.lQuestion.tag?.let { watcher ->
-                if(watcher is TextWatcher){
-                    holder.lQuestion.removeTextChangedListener(watcher)
+                holder.lDescription.tag?.let { watcher ->
+                    if(watcher is TextWatcher){
+                        holder.lDescription.removeTextChangedListener(watcher)
+                    }
                 }
-            }
-            holder.lQuestion.setText(location?.question)
+                holder.lDescription.setText(location?.description)
 
-            holder.lAnswer.tag?.let { watcher ->
-                if(watcher is TextWatcher){
-                    holder.lAnswer.removeTextChangedListener(watcher)
+                holder.lQuestion.tag?.let { watcher ->
+                    if(watcher is TextWatcher){
+                        holder.lQuestion.removeTextChangedListener(watcher)
+                    }
                 }
-            }
-            holder.lAnswer.setText(location?.answer)
+                holder.lQuestion.setText(location?.question)
 
-            val nameWatcher = object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {
-                    location?.name = s?.toString()
+                holder.lAnswer.tag?.let { watcher ->
+                    if(watcher is TextWatcher){
+                        holder.lAnswer.removeTextChangedListener(watcher)
+                    }
                 }
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            }
-            holder.lName.addTextChangedListener(nameWatcher)
-            // A .tag mezőben eltároljuk, hogy később le tudjuk venni
-            holder.lName.tag = nameWatcher
+                holder.lAnswer.setText(location?.answer)
 
-            val descWatcher = object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {
-                    location?.description = s?.toString()
+                val nameWatcher = object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        location?.name = s?.toString()
+                    }
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
                 }
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            }
-            holder.lDescription.addTextChangedListener(descWatcher)
-            holder.lDescription.tag = descWatcher
+                holder.lName.addTextChangedListener(nameWatcher)
+                // A .tag mezőben eltároljuk, hogy később le tudjuk venni
+                holder.lName.tag = nameWatcher
 
-            val questionWatcher = object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {
-                    location?.question = s?.toString()
+                val descWatcher = object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        location?.description = s?.toString()
+                    }
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
                 }
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            }
-            holder.lQuestion.addTextChangedListener(questionWatcher)
-            holder.lQuestion.tag = questionWatcher
+                holder.lDescription.addTextChangedListener(descWatcher)
+                holder.lDescription.tag = descWatcher
 
-            val answerWatcher = object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {
-                    location?.answer = s?.toString()
+                val questionWatcher = object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        location?.question = s?.toString()
+                    }
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
                 }
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                holder.lQuestion.addTextChangedListener(questionWatcher)
+                holder.lQuestion.tag = questionWatcher
+
+                val answerWatcher = object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        location?.answer = s?.toString()
+                    }
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                }
+                holder.lAnswer.addTextChangedListener(answerWatcher)
+                holder.lAnswer.tag = answerWatcher
             }
-            holder.lAnswer.addTextChangedListener(answerWatcher)
-            holder.lAnswer.tag = answerWatcher
         }
 
         override fun getItemCount(): Int = locations!!.size
@@ -376,19 +411,13 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         dialog.show()
     }
 
-    override fun onPause() {
-        viewModel.saveProjectChanges(this)
-        super.onPause()
-    }
-
-    override fun onStop() {
-        viewModel.saveProjectChanges(this)
-        super.onStop()
-    }
-
     override fun onDestroy() {
         viewModel.saveProjectChanges(this)
-        super.onDestroy()
+        viewModel.isSaveFinished.observe(this, Observer { result ->
+            if(result == true){
+                super.onDestroy()
+            }
+        })
     }
 
 
