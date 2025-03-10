@@ -47,6 +47,10 @@ class MakerViewModel: ViewModel() {
         }
     }
 
+    fun deleteLocation(locationName: String){
+        _currentProject.value?.locations?.removeAll{it?.name == locationName}
+    }
+
     fun setCurrentProject(projectName: String){
         _currentProject.value = usersProjectsList.value?.find { it.name == projectName }
     }

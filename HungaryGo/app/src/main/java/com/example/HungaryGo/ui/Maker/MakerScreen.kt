@@ -49,6 +49,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import org.w3c.dom.Text
 
 class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
@@ -129,7 +130,12 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         viewModel.currentProject.observe(this, Observer { result ->
             recyclerView.layoutManager = LinearLayoutManager(this)
             val recycleViewAdapter = result.locations
-            recyclerView.adapter = RecycleViewAdapter(result,recycleViewAdapter)
+            recyclerView.adapter = RecycleViewAdapter(result,recycleViewAdapter, viewModel){ locationName, resultCallback ->
+                // Itt valójában a showMakerLocationDeletionDialog függvényt hívod meg
+                showMakerLocationDeletionDialog(locationName) { userWantsDelete ->
+                    resultCallback(userWantsDelete)
+                }
+            }
 
             for (location in result.locations)
             {
@@ -141,7 +147,9 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
     //Adapter a recycleView-hoz, mivel az saját konstruktort igényel, nem jó, ami a listához kell
     class RecycleViewAdapter(
         private val makerLocationPack: MakerLocationPackData,
-        private val locations: MutableList<MakerLocationDescription?>?
+        private val locations: MutableList<MakerLocationDescription?>?,
+        private val viewModel: MakerViewModel,
+        private val showMakerLocationDeletionDialog: (String, (Boolean) -> Unit) -> Unit
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
         companion object {
@@ -150,7 +158,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         }
 
         class MakerLocationPackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val lpName: EditText = itemView.findViewById(R.id.lpName)
+            val lpName: TextView = itemView.findViewById(R.id.lpName)
             val lpDescription: EditText = itemView.findViewById(R.id.lpDescription)
             val lpArea: EditText = itemView.findViewById(R.id.lpArea)
         }
@@ -161,6 +169,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             val lDescription: EditText = itemView.findViewById(R.id.lDescription)
             val lQuestion: EditText = itemView.findViewById(R.id.lQuestion)
             val lAnswer: EditText = itemView.findViewById(R.id.lAnswer)
+            val deleteButton: ImageButton = itemView.findViewById(R.id.deleteButton)
         }
 
         override fun getItemViewType(position: Int): Int {
@@ -188,10 +197,64 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
             if (holder is MakerLocationPackViewHolder) {
-                // Például beállíthatod a headerTextet
+                holder.lpName.text = makerLocationPack.name
+
+                holder.lpDescription.tag?.let { watcher ->
+                    if(watcher is TextWatcher){
+                        holder.lpDescription.removeTextChangedListener(watcher)
+                    }
+                }
+                holder.lpDescription.setText(makerLocationPack.description)
+
+                holder.lpArea.tag?.let { watcher ->
+                    if(watcher is TextWatcher){
+                        holder.lpArea.removeTextChangedListener(watcher)
+                    }
+                }
+                holder.lpArea.setText(makerLocationPack.area)
+
+
+                val descLPWatcher = object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        makerLocationPack.description = s.toString()
+                    }
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                }
+                holder.lpDescription.addTextChangedListener(descLPWatcher)
+                holder.lpDescription.tag = descLPWatcher
+
+                val areaLPWatcher = object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        makerLocationPack.description = s.toString()
+                    }
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                }
+                holder.lpArea.addTextChangedListener(areaLPWatcher)
+                holder.lpArea.tag = areaLPWatcher
+
                 //TODO megírni a locationPack részt
             } else if (holder is MakerLocationViewHolder) {
                 val location = locations?.get(position)
+                holder.deleteButton.setOnClickListener{
+
+                    showMakerLocationDeletionDialog(location?.name!!){ isDeletable ->
+                        if(isDeletable){
+                            val currentPosition = holder.adapterPosition
+                            if (currentPosition != RecyclerView.NO_POSITION) {
+                                location.name?.let { name ->
+                                    viewModel.deleteLocation(name)
+                                    locations?.remove(location)
+                                    notifyItemRemoved(currentPosition)
+                                }
+                            }
+                        }else{
+
+                        }
+                    }
+                }
+
                 holder.lName.tag?.let { watcher ->
                     if(watcher is TextWatcher){
                         holder.lName.removeTextChangedListener(watcher)
@@ -265,7 +328,6 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
         override fun getItemCount(): Int = locations!!.size
     }
-
 
     private fun getCurrentLocationUser() {
         //engedély ellenőrzése, haa nincsenek meg, engedélyt kér
@@ -361,6 +423,26 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
+    //callback (onResult), hogy ne adjon vissza egyből értéket
+    fun showMakerLocationDeletionDialog(locationDeletable: String, onResult: (Boolean) -> Unit){
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.maker_location_delete_dialog)
+        dialog.setCancelable(false)
+        val saveButton = dialog.findViewById<Button>(R.id.saveButton)
+        val cancelButton = dialog.findViewById<Button>(R.id.cancelButton)
+        val lName = dialog.findViewById<TextView>(R.id.lName)
+
+        lName.text = locationDeletable
+        saveButton.setOnClickListener{
+            onResult(true)
+            dialog.dismiss()
+        }
+        cancelButton.setOnClickListener{
+            onResult(false)
+            dialog.dismiss()
+        }
+        dialog.show()
+    }
 
     fun showMakerProjectsDialog(){
         val dialog = Dialog(this)

@@ -16,4 +16,6 @@
     <string name="szep">Nagyon szép!</string>
     <string name="osszes">Összes</string>
     <string name="helysz_n_neve">Helyszín neve</string>
+    <string name="igen">Igen</string>
+    <string name="m_gse">Mégse</string>
 </resources>

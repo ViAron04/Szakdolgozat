@@ -183,7 +183,7 @@ class MakerRepository {
                 makerLocationPackDataLocations.add(locationData?.name!!)
             }
 
-            //TODO if-hez más megoldást találni, mert ha kitörlök egyet é hozzáadok, nem működik
+            //toSet miatt mindegy az elemk sorrendje  a listában
             if (locationNameList.toSet() != makerLocationPackDataLocations.toSet()) {
                 for (locationData in makerLocationPackData.locations) {
                     if (!locationNameList.contains(locationData?.name)) {
