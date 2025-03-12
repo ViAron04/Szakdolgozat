@@ -1,8 +1,6 @@
 package com.example.HungaryGo.data.repository
 
-import android.content.Context
 import android.util.Log
-import com.example.HungaryGo.LocationDescription
 import com.example.HungaryGo.MakerLocationDescription
 import com.example.HungaryGo.MakerLocationPackData
 import com.google.android.gms.maps.model.LatLng
@@ -154,7 +152,6 @@ class MakerRepository {
                         ).await()
                     }
 
-
                 if (currrentMakerLocationPackDataLocation.answer  != "" && currrentMakerLocationPackDataLocation.answer != null
                     && currrentMakerLocationPackDataLocation.question != "" && currrentMakerLocationPackDataLocation.question != null ){
                     locationData.reference.update(
@@ -216,6 +213,20 @@ class MakerRepository {
             }
         } catch (e: Exception) {
             Log.e("MakerRepository", "Hiba a saveProjectChanges-ben: ", e)
+        }
+    }
+
+    suspend fun deleteProject(projectName: String){
+        try{
+            val documentRef = dbFirestore
+                .collection("userpoints")
+                .document(currentUserEmail)
+                .collection("workInProgress")
+                .document(projectName)
+
+            documentRef.delete().await()
+        } catch (e: Exception) {
+            Log.e("MakerRepository", "Hiba a deleteProject-ben: ", e)
         }
     }
 }

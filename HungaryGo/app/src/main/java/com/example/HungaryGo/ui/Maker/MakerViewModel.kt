@@ -51,6 +51,13 @@ class MakerViewModel: ViewModel() {
         _currentProject.value?.locations?.removeAll{it?.name == locationName}
     }
 
+    fun deleteProject(projectName: String, context: Context){
+        viewModelScope.launch {
+            _usersProjectsList.value?.remove(_usersProjectsList.value?.find { it.name == projectName })
+            repository.deleteProject(projectName)
+        }
+    }
+
     fun setCurrentProject(projectName: String){
         _currentProject.value = usersProjectsList.value?.find { it.name == projectName }
     }

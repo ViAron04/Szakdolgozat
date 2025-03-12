@@ -460,6 +460,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                     val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.maker_projects_element, parent, false)
                     val lpName: TextView = view.findViewById(R.id.lpName)
                     val lpLocationCount: TextView = view.findViewById(R.id.lpLocationCount)
+                    val deleteButton: ImageButton = view.findViewById(R.id.deleteButton)
 
                     val locationPack = getItem(position)
 
@@ -472,6 +473,17 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                         showLoading()
                         viewModel.setCurrentProject(lpName.text.toString())
                         dialog.dismiss()
+                    }
+
+                    deleteButton.setOnClickListener{
+                        showMakerProjectDeletionDialog(locationPack?.name!!){  isDeletable ->
+                            if(isDeletable){
+                                viewModel.deleteProject(locationPack.name, context)
+                                remove(locationPack)
+                            }else{
+
+                            }
+                        }
                     }
 
                     return view
@@ -502,6 +514,25 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         })
     }
 
+    fun showMakerProjectDeletionDialog(projectDeletable: String, onResult: (Boolean) -> Unit){
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.maker_project_delete_dialog)
+        dialog.setCancelable(false)
+        val saveButton = dialog.findViewById<Button>(R.id.saveButton)
+        val cancelButton = dialog.findViewById<Button>(R.id.cancelButton)
+        val projectName = dialog.findViewById<TextView>(R.id.projectName)
+
+        projectName.text = projectDeletable
+        saveButton.setOnClickListener{
+            onResult(true)
+            dialog.dismiss()
+        }
+        cancelButton.setOnClickListener{
+            onResult(false)
+            dialog.dismiss()
+        }
+        dialog.show()
+    }
 
     private fun showMakerLevelNameDialog() {
         val dialog = Dialog(this)
