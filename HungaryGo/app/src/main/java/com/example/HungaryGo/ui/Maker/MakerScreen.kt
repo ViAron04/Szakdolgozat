@@ -127,6 +127,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        //projekthez tartozó helyszínek megjelenítése
         viewModel.currentProject.observe(this, Observer { result ->
             recyclerView.layoutManager = LinearLayoutManager(this)
             val recycleViewAdapter = result.locations
@@ -236,7 +237,8 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
                 //TODO megírni a locationPack részt
             } else if (holder is MakerLocationViewHolder) {
-                val location = locations?.get(position)
+                val locationIndex = position-1 //a header miatt
+                val location = locations?.get(locationIndex)
                 holder.deleteButton.setOnClickListener{
 
                     showMakerLocationDeletionDialog(location?.name!!){ isDeletable ->
@@ -326,7 +328,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        override fun getItemCount(): Int = locations!!.size
+        override fun getItemCount(): Int = locations!!.size+1
     }
 
     private fun getCurrentLocationUser() {
