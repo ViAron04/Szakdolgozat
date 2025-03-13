@@ -6,11 +6,15 @@ import android.Manifest
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.location.Location
+import android.net.Uri
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import com.google.android.gms.location.LocationRequest
 
@@ -26,8 +30,12 @@ import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.FileProvider
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -35,6 +43,8 @@ import com.example.HungaryGo.MakerLocationDescription
 import com.example.HungaryGo.MakerLocationPackData
 import com.example.HungaryGo.R
 import com.example.HungaryGo.ui.Main.MainScreen
+import com.example.HungaryGo.ui.Main.MainScreen.BitmapStore
+import com.example.HungaryGo.ui.Main.MainScreen.BitmapStore.loadedBitmaps
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -49,7 +59,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.yalantis.ucrop.UCrop
 import org.w3c.dom.Text
+import java.io.File
 
 class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
@@ -62,11 +74,16 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var locationCallback1: LocationCallback
     private var openedDialog: Dialog? = null
     private val viewModel: MakerViewModel by viewModels()
-
+    private lateinit var getContent: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maker)
+
+        //kép hozzáadásához
+        getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { processImage(it) }
+        }
 
         fusedLocationClient =
             LocationServices.getFusedLocationProviderClient(applicationContext) //segít energiatakarékosan és hatékonyan megszerezni a helyadatokat
@@ -80,8 +97,6 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                 super.onLocationResult(locationResult)
                 val location = locationResult.lastLocation //kiszűri a legutóbbi pozíciót
 
-
-
                 if (location != null) {
                     currentMarker?.remove()
 
@@ -93,6 +108,17 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                         MarkerOptions().position(latLng).title("Szerénységem").icon(icon)
                     )!!
 
+                    mGoogleMap?.setOnMarkerClickListener { marker ->
+                        if (marker == currentMarker) {
+                            // Ezzel a true visszatéréssel jelezzük, hogy az eseményt elnyertük,
+                            // így a currentMarker-re kattintásra nem történik további művelet.
+                            true
+                        } else {
+                            // Más markerek esetén engedjük az alapértelmezett viselkedést.
+                            false
+                        }
+                    }
+                    currentMarker
                     val newLatLng = LatLng(location.latitude, location.longitude)
                     mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLng(newLatLng)) //a kamera ezáltal követi a felhasználót
                 }
@@ -131,7 +157,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         viewModel.currentProject.observe(this, Observer { result ->
             recyclerView.layoutManager = LinearLayoutManager(this)
             val recycleViewAdapter = result.locations
-            recyclerView.adapter = RecycleViewAdapter(result,recycleViewAdapter, viewModel){ locationName, resultCallback ->
+            recyclerView.adapter = RecycleViewAdapter(result,recycleViewAdapter, viewModel, {getContent.launch("image/*")}){ locationName, resultCallback ->
                 // Itt valójában a showMakerLocationDeletionDialog függvényt hívod meg
                 showMakerLocationDeletionDialog(locationName) { userWantsDelete ->
                     resultCallback(userWantsDelete)
@@ -145,11 +171,35 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         })
     }
 
+    private fun processImage(uri: Uri) {
+        // Bitmap beolvasása az URI-ból
+        val inputStream = contentResolver.openInputStream(uri)
+        val originalBitmap = BitmapFactory.decodeStream(inputStream)
+        inputStream?.close()
+
+        val destinationUri = Uri.fromFile(File(this.cacheDir, "cropped_image.jpg"))
+
+
+        UCrop.of(uri, destinationUri)
+            .withAspectRatio(3f, 2f) // 300x200 méretarány
+            .withMaxResultSize(300, 200)
+            .start(this)
+
+        // Példa: A képet 300x300 pixel méretűre átméretezzük
+        val targetWidth = 300
+        val targetHeight = 200
+        val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true)
+
+        BitmapStore.loadedBitmaps[viewModel.currentProject.value?.name] = scaledBitmap
+        Log.d("ProcessImage", "Helloo, lefutottam!")
+    }
+
     //Adapter a recycleView-hoz, mivel az saját konstruktort igényel, nem jó, ami a listához kell
     class RecycleViewAdapter(
         private val makerLocationPack: MakerLocationPackData,
         private val locations: MutableList<MakerLocationDescription?>?,
         private val viewModel: MakerViewModel,
+        private val selectImage: () -> Unit,
         private val showMakerLocationDeletionDialog: (String, (Boolean) -> Unit) -> Unit
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -162,6 +212,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             val lpName: TextView = itemView.findViewById(R.id.lpName)
             val lpDescription: EditText = itemView.findViewById(R.id.lpDescription)
             val lpArea: EditText = itemView.findViewById(R.id.lpArea)
+            val lpImage: ImageButton = itemView.findViewById(R.id.lpImage)
         }
 
 
@@ -235,7 +286,13 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                 holder.lpArea.addTextChangedListener(areaLPWatcher)
                 holder.lpArea.tag = areaLPWatcher
 
-                //TODO megírni a locationPack részt
+                holder.lpImage.setOnClickListener{
+
+                    selectImage()
+
+                    Log.d("LpImage", "Helloo, lefutottam!")
+                }
+
             } else if (holder is MakerLocationViewHolder) {
                 val locationIndex = position-1 //a header miatt
                 val location = locations?.get(locationIndex)

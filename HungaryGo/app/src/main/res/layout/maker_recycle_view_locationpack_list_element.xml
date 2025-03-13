@@ -20,50 +20,81 @@
             android:textStyle="bold" />
         <TextView
             android:id="@+id/lpName"
+            android:textSize="14dp"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             />
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp"
-            android:layout_marginStart="30dp"
-            android:text="Leírás"
-            android:textSize="14dp"
-            android:textStyle="bold" />
-        <EditText
-            android:id="@+id/lpDescription"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="50dp"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp"
-            android:layout_marginStart="30dp"
-            android:text="Terület"
-            android:textSize="14dp"
-            android:textStyle="bold" />
-        <EditText
-            android:id="@+id/lpArea"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:hint="nincs"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginStart="30dp"
+                    android:text="Leírás"
+                    android:textSize="14dp"
+                    android:textStyle="bold" />
+                <EditText
+                    android:id="@+id/lpDescription"
+                    android:layout_width="200dp"
+                    android:textSize="14dp"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginStart="30dp"
+                    android:text="Terület"
+                    android:textSize="14dp"
+                    android:textStyle="bold" />
+                <EditText
+                    android:id="@+id/lpArea"
+                    android:textSize="14dp"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:hint="nincs"
+                    />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/lpImage"
+            android:layout_width="100dp"
+            android:layout_height="75dp"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/questionmark"
+            android:scaleType="fitCenter"
+            android:background="@drawable/border"
+            android:padding="5dp"
             />
+
     </LinearLayout>
+
+
+
 
     <View
         android:layout_width="match_parent"

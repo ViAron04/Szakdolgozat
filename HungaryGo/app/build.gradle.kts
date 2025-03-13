@@ -65,6 +65,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
     implementation("androidx.work:work-runtime-ktx:2.10.0") //WorkerManager
     implementation("com.google.code.gson:gson:2.8.8") //Gsson
+    implementation ("com.github.yalantis:ucrop:2.2.10") //unCrop, képkivágáshoz
 
     kapt("com.github.bumptech.glide:compiler:4.15.1")
     testImplementation("junit:junit:4.13.2")
