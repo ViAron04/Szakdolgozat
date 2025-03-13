@@ -30,6 +30,9 @@ class MakerViewModel: ViewModel() {
     private val _isSaveFinished = MutableLiveData<Boolean>(false)
     val isSaveFinished: LiveData<Boolean> get() = _isSaveFinished
 
+    private val _isNewPictureLoaded = MutableLiveData<Boolean>(false)
+    val isNewPictureLoaded: LiveData<Boolean> get() = _isNewPictureLoaded
+
     private val repository: MakerRepository = MakerRepository()
 
     fun getUsersProjects(){
@@ -89,6 +92,10 @@ class MakerViewModel: ViewModel() {
             _isSaveFinished.value = false
         }
 
+    }
+
+    fun newPictureLoaded(value: Boolean){
+        _isNewPictureLoaded.value = value
     }
 
 }
