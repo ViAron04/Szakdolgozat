@@ -1,6 +1,6 @@
 package com.example.HungaryGo.ui.Main
 
-import CustomInfoWindowForGoogleMap
+import CustomInfoWindowForMainScreen
 import android.Manifest
 import android.animation.ValueAnimator
 import android.app.Dialog
@@ -8,7 +8,6 @@ import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -66,22 +65,11 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.tasks.Tasks
 import com.google.android.material.navigation.NavigationView
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
 import java.text.Normalizer
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 
 class MainScreen : AppCompatActivity(), OnMapReadyCallback,
@@ -258,7 +246,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
             val xButton = findViewById<ImageButton>(R.id.xButton)
             xButton.visibility = View.INVISIBLE
             mGoogleMap.setInfoWindowAdapter(
-                CustomInfoWindowForGoogleMap(
+                CustomInfoWindowForMainScreen(
                     this@MainScreen,
                     viewModel.locationPacksData.value!!,
                     null
@@ -271,7 +259,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         }
         else{
             mGoogleMap.setInfoWindowAdapter(
-                CustomInfoWindowForGoogleMap(
+                CustomInfoWindowForMainScreen(
                     this@MainScreen,
                     viewModel.locationPacksData.value!!,
                     currentLocationPackName.name
@@ -303,7 +291,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
             if (locationPackList != null) {
                 mGoogleMap.setInfoWindowAdapter(
-                    CustomInfoWindowForGoogleMap(
+                    CustomInfoWindowForMainScreen(
                         this@MainScreen,
                         locationPackList,
                         viewModel.currentLocationPackData.value?.name
@@ -644,7 +632,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 else
                 {
                     mGoogleMap.setInfoWindowAdapter(
-                        CustomInfoWindowForGoogleMap(
+                        CustomInfoWindowForMainScreen(
                             this@MainScreen,
                             allLocationPackData,
                             currentLocationPack
@@ -762,7 +750,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
         restartButton.setOnClickListener{
             viewModel.restartLevel(currentLocationPackData.name)
             mGoogleMap.setInfoWindowAdapter(
-                CustomInfoWindowForGoogleMap(
+                CustomInfoWindowForMainScreen(
                     this@MainScreen,
                     allLocationPackData,
                     currentLocationPack

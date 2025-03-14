@@ -5,7 +5,7 @@
 
     <ImageView
         android:id="@+id/prevLPImage"
-        android:layout_width="match_parent"
+        android:layout_width="400dp"
         android:layout_height="wrap_content"
         android:scaleType="fitCenter"
         android:layout_gravity="center"

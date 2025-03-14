@@ -59,7 +59,6 @@ class MakerViewModel: ViewModel() {
             _currentProject.value = usersProjectsList.value?.find { it.name == projectName }
             repository.downloadImage(projectName, context)
         }
-
     }
 
     fun addNewLocationToCurrentProject(name: String, markerOptions: MarkerOptions){

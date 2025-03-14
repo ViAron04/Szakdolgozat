@@ -1,5 +1,6 @@
 package com.example.HungaryGo.ui.Maker
 
+import CustomInfoWindowForMakerScreen
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.Manifest
@@ -118,7 +119,6 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                             false
                         }
                     }
-                    currentMarker
                     val newLatLng = LatLng(location.latitude, location.longitude)
                     mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLng(newLatLng)) //a kamera ezáltal követi a felhasználót
                 }
@@ -168,6 +168,23 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             for (location in result.locations)
             {
                 mGoogleMap?.addMarker(location?.markerOptions!!)
+                mGoogleMap?.setInfoWindowAdapter(
+                    CustomInfoWindowForMakerScreen(
+                        this@MakerScreen,
+                        viewModel.currentProject.value!!
+                    )
+                )
+            }
+        })
+
+        viewModel.isNewPictureLoaded.observe(this, Observer { result ->
+            if(result){
+                mGoogleMap?.setInfoWindowAdapter(
+                    CustomInfoWindowForMakerScreen(
+                        this@MakerScreen,
+                        viewModel.currentProject.value!!
+                    )
+                )
             }
         })
     }
@@ -316,7 +333,6 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                     viewModel.isNewPictureLoaded.observe(owner, Observer { result ->
                         if(result){
                             holder.lpImage.setImageBitmap(BitmapStore.loadedBitmaps[viewModel.currentProject.value?.name])
-
                         }
                     })
 
@@ -599,7 +615,6 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
             listView.adapter = adapter
-
         }
 
         backToMainButton.setOnClickListener{

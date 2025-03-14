@@ -10,11 +10,14 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 import com.google.firebase.storage.FirebaseStorage
 import com.example.HungaryGo.LocationPackData
+import com.example.HungaryGo.MakerLocationPackData
 import com.example.HungaryGo.ui.Main.MainScreen
+import com.example.HungaryGo.ui.Main.MainScreen.BitmapStore.loadedBitmaps
+import com.example.HungaryGo.ui.Main.MainScreen.RemoveAccents.removeAccents
 import java.text.Normalizer
 
 
-class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksList: MutableList<LocationPackData>, val currentLocation: String?) : GoogleMap.InfoWindowAdapter {
+class CustomInfoWindowForMainScreen(context: Context, private val locationPacksList: MutableList<LocationPackData>, currentLocationPack: String?) : GoogleMap.InfoWindowAdapter {
 
     //eltárolja a már eltöltött képeket
     private val loadedImages = mutableMapOf<String, Boolean>()
@@ -22,7 +25,7 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
     var infowindow = R.layout.infowindow
 
     init {
-        if (currentLocation != null) {
+        if (currentLocationPack != null) {
             infowindow = R.layout.infowindowlocation
         }
     }
@@ -37,18 +40,7 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
                 locationPackName=locationPack.name
         }
 
-
-        //kép megjelenítése
-        fun removeAccents(input: String?): String {
-            val normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
-            return normalized.replace(Regex("\\p{Mn}"), "")
-        }
-
-        val imgName = removeAccents(locationPackName?.lowercase()?.replace(' ','_'))
-
-
-
-
+        val imgName = removeAccents(locationPackName)
 
         if(infowindow == R.layout.infowindow)
         {
@@ -58,7 +50,7 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
             locationPack.text = locationPackName
             location.text =marker.title
 
-            if(MainScreen.BitmapStore.loadedBitmaps.containsKey(locationPackName))
+            if(loadedBitmaps.containsKey(locationPackName))
             {
                 locationPackImg.setImageBitmap(MainScreen.BitmapStore.loadedBitmaps[locationPackName])
             }else {
@@ -88,6 +80,41 @@ class CustomInfoWindowForGoogleMap(context: Context, private val locationPacksLi
             location.text =marker.title
         }
 
+    }
+
+    override fun getInfoContents(marker: Marker): View {
+        rendowWindowText(marker, mWindow)
+        return mWindow
+    }
+
+    override fun getInfoWindow(marker: Marker): View? {
+        rendowWindowText(marker, mWindow)
+        return mWindow
+    }
+}
+
+class CustomInfoWindowForMakerScreen(context: Context, private val currentLocationPack: MakerLocationPackData) : GoogleMap.InfoWindowAdapter {
+
+    var infowindow = R.layout.infowindow
+
+    var mWindow = (context as Activity).layoutInflater.inflate(infowindow, null)
+
+    private fun rendowWindowText(marker: Marker, view: View){
+
+        val locationPackName: String = currentLocationPack.name
+
+        val locationPackImg: ImageView = view.findViewById(R.id.location_img)
+        val locationPack = view.findViewById<TextView>(R.id.location_pack)
+        val location = view.findViewById<TextView>(R.id.location)
+        locationPack.text = locationPackName
+        location.text =marker.title
+
+        if(loadedBitmaps.containsKey(locationPackName)) {
+            locationPackImg.setImageBitmap(loadedBitmaps[locationPackName])
+        }
+        else{
+            locationPackImg.setImageResource(R.drawable.questionmark)
+        }
     }
 
     override fun getInfoContents(marker: Marker): View {
