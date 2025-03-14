@@ -2,10 +2,16 @@ package com.example.HungaryGo.data.repository
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.Log
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.example.HungaryGo.MakerLocationDescription
 import com.example.HungaryGo.MakerLocationPackData
+import com.example.HungaryGo.ui.Main.MainScreen.BitmapStore.loadedBitmaps
 import com.example.HungaryGo.ui.Main.MainScreen.RemoveAccents.removeAccents
 import com.example.HungaryGo.ui.Maker.MakerScreen
 import com.google.android.gms.maps.model.LatLng
@@ -16,6 +22,9 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.io.File
 
@@ -248,6 +257,37 @@ class MakerRepository {
 
         } catch (e: Exception) {
             Log.e("MakerRepository", "Hiba az uploadImage-ben: ", e)
+        }
+    }
+
+    suspend fun downloadImage(projectName: String, context: Context){
+        try {
+            val imageName = removeAccents(projectName)
+            val storageRef = dbStorage.child("maker_location_packs_images/$imageName.jpg")
+
+            storageRef.metadata.addOnSuccessListener {
+                storageRef.downloadUrl.addOnSuccessListener { uri ->
+                    Glide.with(context)
+                        .asBitmap()
+                        .load(uri)
+                        .into(object : CustomTarget<Bitmap>() {
+                            override fun onResourceReady(
+                                resource: Bitmap,
+                                transition: Transition<in Bitmap>?
+                            ) {
+                                loadedBitmaps[projectName] = resource
+                                Log.d("MakerRepository", "Kép letöltve")
+                            }
+
+                            override fun onLoadCleared(placeholder: Drawable?) {
+                            }
+                        })
+                }
+            }.addOnFailureListener{
+                Log.d("MakerRepository", "Még nem készült kép")
+            }
+        }catch (e: Exception) {
+            Log.e("MakerRepository", "Hiba a downloadImage-ben: ", e)
         }
     }
 }

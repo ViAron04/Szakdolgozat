@@ -1,22 +1,15 @@
 package com.example.HungaryGo.ui.Maker
 
 import android.content.Context
+import android.widget.ArrayAdapter
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.example.HungaryGo.MakerLocationDescription
 import com.example.HungaryGo.MakerLocationPackData
 import com.example.HungaryGo.data.repository.MakerRepository
-import com.example.HungaryGo.data.repository.UserRepository
-import com.example.HungaryGo.data.worker.SaveProjectWorker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.gson.Gson
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -35,7 +28,7 @@ class MakerViewModel: ViewModel() {
 
     private val repository: MakerRepository = MakerRepository()
 
-    fun getUsersProjects(){
+    fun getUsersProjects(context: Context){
         viewModelScope.launch {
             val result = repository.getUsersProjects()
             if(result.isSuccess){
@@ -61,8 +54,12 @@ class MakerViewModel: ViewModel() {
         }
     }
 
-    fun setCurrentProject(projectName: String){
-        _currentProject.value = usersProjectsList.value?.find { it.name == projectName }
+    fun setCurrentProject(projectName: String, context: Context){
+        viewModelScope.launch {
+            _currentProject.value = usersProjectsList.value?.find { it.name == projectName }
+            repository.downloadImage(projectName, context)
+        }
+
     }
 
     fun addNewLocationToCurrentProject(name: String, markerOptions: MarkerOptions){

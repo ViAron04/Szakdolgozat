@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.Manifest
 import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
@@ -124,12 +125,12 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        viewModel.getUsersProjects()
+        viewModel.getUsersProjects(this)
 
         showLoading()
 
         viewModel.usersProjectsList.observe(this, Observer { result ->
-            showMakerProjectsDialog()
+            showMakerProjectsDialog(this)
         })
 
         val bottomSheet = findViewById<View>(R.id.bottomSheet)
@@ -552,7 +553,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         dialog.show()
     }
 
-    fun showMakerProjectsDialog(){
+    fun showMakerProjectsDialog(context: Context){
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.maker_projects_dialog)
         dialog.setCancelable(false)
@@ -579,7 +580,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                         val headerTitle = findViewById<TextView>(R.id.headerTitle)
                         headerTitle.text = lpName.text
                         showLoading()
-                        viewModel.setCurrentProject(lpName.text.toString())
+                        viewModel.setCurrentProject(lpName.text.toString(), context)
                         dialog.dismiss()
                     }
 
@@ -606,7 +607,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         }
 
         addProjectButton.setOnClickListener{
-            showMakerLevelNameDialog()
+            showMakerLevelNameDialog(this)
         }
 
         openedDialog = dialog
@@ -642,7 +643,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         dialog.show()
     }
 
-    private fun showMakerLevelNameDialog() {
+    private fun showMakerLevelNameDialog(context: Context) {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.maker_level_name_dialog)
         dialog.setCancelable(false)
@@ -654,7 +655,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             if(lpName.text.toString() != "" && lpName.text != null){
                 viewModel.addUserProject(lpName.text.toString())
                 showLoading()
-                viewModel.setCurrentProject(lpName.text.toString())
+                viewModel.setCurrentProject(lpName.text.toString(), context)
                 dialog.dismiss()
                 openedDialog?.dismiss()
             }
@@ -750,7 +751,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
         showLoading()
         viewModel.isSaveFinished.observe(this, Observer { result ->
             if(result == true){
-                showMakerProjectsDialog()
+                showMakerProjectsDialog(this)
             }
         })
     }
