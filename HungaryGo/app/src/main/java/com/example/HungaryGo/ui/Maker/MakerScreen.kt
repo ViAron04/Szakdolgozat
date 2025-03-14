@@ -43,6 +43,7 @@ import com.example.HungaryGo.MakerLocationPackData
 import com.example.HungaryGo.R
 import com.example.HungaryGo.ui.Main.MainScreen
 import com.example.HungaryGo.ui.Main.MainScreen.BitmapStore
+import com.example.HungaryGo.ui.Main.MainScreen.BitmapStore.loadedBitmaps
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -153,9 +154,10 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
         //projekthez tartozó helyszínek megjelenítése
         viewModel.currentProject.observe(this, Observer { result ->
+
             recyclerView.layoutManager = LinearLayoutManager(this)
             val recycleViewAdapter = result.locations
-            recyclerView.adapter = RecycleViewAdapter(this, result,recycleViewAdapter, viewModel, {getContent.launch("image/*")}){ locationName, resultCallback ->
+            recyclerView.adapter = RecycleViewAdapter(this, result,recycleViewAdapter, viewModel, {showMakerImageDisplayDialog()}){ locationName, resultCallback ->
                 // Itt valójában a showMakerLocationDeletionDialog függvényt hívod meg
                 showMakerLocationDeletionDialog(locationName) { userWantsDelete ->
                     resultCallback(userWantsDelete)
@@ -172,24 +174,43 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
     private fun processImage(uri: Uri) {
         // Bitmap beolvasása az URI-ból
         val inputStream = contentResolver.openInputStream(uri)
-        val originalBitmap = BitmapFactory.decodeStream(inputStream)
         inputStream?.close()
 
         val destinationUri = Uri.fromFile(File(this.cacheDir, "cropped_image.jpg"))
 
-
         UCrop.of(uri, destinationUri)
-            .withAspectRatio(3f, 2f) // 300x200 méretarány
+            .withAspectRatio(3f, 2f) // 3x2 méretarány
             .withMaxResultSize(500, 333)
             .start(this)
 
-        /*
-        // Példa: A képet 300x300 pixel méretűre átméretezzük
-        val targetWidth = 300
-        val targetHeight = 200
-        val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true)
-        */
         Log.d("ProcessImage", "Helloo, lefutottam!")
+    }
+
+    fun showMakerImageDisplayDialog(){
+        if(loadedBitmaps[viewModel.currentProject.value?.name] != null)
+        {
+            val dialog = Dialog(this)
+            dialog.setContentView(R.layout.maker_image_display_dialog)
+            val prevLPImage = dialog.findViewById<ImageView>(R.id.prevLPImage)
+            val backButton = dialog.findViewById<ImageButton>(R.id.backButton)
+            val newButton = dialog.findViewById<ImageButton>(R.id.newButton)
+            prevLPImage.setImageBitmap(loadedBitmaps[viewModel.currentProject.value?.name])
+
+            newButton.setOnClickListener{
+                getContent.launch("image/*")
+                dialog.dismiss()
+            }
+
+            backButton.setOnClickListener{
+                dialog.dismiss()
+            }
+
+            dialog.show()
+        }
+        else{
+            getContent.launch("image/*")
+        }
+
     }
 
     //Adapter a recycleView-hoz, mivel az saját konstruktort igényel, nem jó, ami a listához kell
@@ -408,7 +429,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
             // 3️⃣ Eltárolás későbbi használatra
             showLoading()
-            BitmapStore.loadedBitmaps[viewModel.currentProject.value?.name] = croppedBitmap
+            loadedBitmaps[viewModel.currentProject.value?.name] = croppedBitmap
             viewModel.uploadCroppedImage(this)
         } else if (resultCode == UCrop.RESULT_ERROR) {
             val cropError = UCrop.getError(data!!)
