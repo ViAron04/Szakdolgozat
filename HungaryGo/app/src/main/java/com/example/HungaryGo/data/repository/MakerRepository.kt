@@ -1,8 +1,13 @@
 package com.example.HungaryGo.data.repository
 
+import android.app.Activity
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.example.HungaryGo.MakerLocationDescription
 import com.example.HungaryGo.MakerLocationPackData
+import com.example.HungaryGo.ui.Main.MainScreen.RemoveAccents.removeAccents
+import com.example.HungaryGo.ui.Maker.MakerScreen
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.Firebase
@@ -10,12 +15,15 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
+import java.io.File
 
 
 class MakerRepository {
     private val auth: FirebaseAuth = Firebase.auth
     private val dbFirestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    val dbStorage = FirebaseStorage.getInstance().reference
     val currentUserEmail = auth.currentUser?.email.toString()
 
     suspend fun getUsersProjects(): Result<MutableList<MakerLocationPackData>> {
@@ -227,6 +235,19 @@ class MakerRepository {
             documentRef.delete().await()
         } catch (e: Exception) {
             Log.e("MakerRepository", "Hiba a deleteProject-ben: ", e)
+        }
+    }
+
+    suspend fun uploadCroppedImage(currentProjectName: String, context: Context){
+        try{
+            val currentProjectNameWithoutAccents = removeAccents(currentProjectName)
+            val imageUri = Uri.fromFile(File(context.cacheDir, "cropped_image.jpg"))
+            val imageRef = dbStorage.child("maker_location_packs_images/$currentProjectNameWithoutAccents.jpg")
+
+            imageRef.putFile(imageUri).await()
+
+        } catch (e: Exception) {
+            Log.e("MakerRepository", "Hiba az uploadImage-ben: ", e)
         }
     }
 }

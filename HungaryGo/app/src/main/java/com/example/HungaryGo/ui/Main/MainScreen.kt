@@ -583,7 +583,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
                 val ratingBar = dialog.findViewById<RatingBar>(R.id.ratingBar)
 
 
-                val currentLocationPackUri = removeAccents(viewModel.currentLocationPackData.value!!.name.lowercase().replace(' ','_'))
+                val currentLocationPackUri = RemoveAccents.removeAccents(viewModel.currentLocationPackData.value!!.name)
                 val storageRef = FirebaseStorage.getInstance().reference.child("location_packs_rewards/$currentLocationPackUri.png")
 
                 storageRef.downloadUrl.addOnSuccessListener { uri ->
@@ -659,7 +659,7 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
 
         //Ha a bitmapstore még nem tartalmazná a képet
         if(!BitmapStore.loadedBitmaps.containsKey(currentLocationPackData.name )){
-            val currentLocationPackUri = removeAccents(currentLocationPackData.name.lowercase().replace(' ','_'))
+            val currentLocationPackUri = RemoveAccents.removeAccents(currentLocationPackData.name)
             val storageRef = FirebaseStorage.getInstance().reference.child("location_packs_images/$currentLocationPackUri.jpg")
 
             storageRef.downloadUrl.addOnSuccessListener { uri ->
@@ -783,9 +783,12 @@ class MainScreen : AppCompatActivity(), OnMapReadyCallback,
     }
 
 
-    fun removeAccents(input: String?): String {
-        val normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
-        return normalized.replace(Regex("\\p{Mn}"), "")
+    object RemoveAccents {
+        fun removeAccents(input: String?): String {
+            var normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
+            normalized = normalized.replace(Regex("\\p{Mn}"), "").lowercase().replace(' ','_')
+            return normalized
+        }
     }
 
     // a currentLocationPack-et Null-ra állítja

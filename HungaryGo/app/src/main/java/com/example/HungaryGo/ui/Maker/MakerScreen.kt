@@ -180,7 +180,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
 
         UCrop.of(uri, destinationUri)
             .withAspectRatio(3f, 2f) // 300x200 méretarány
-            .withMaxResultSize(300, 200)
+            .withMaxResultSize(500, 333)
             .start(this)
 
         /*
@@ -294,7 +294,7 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                     viewModel.isNewPictureLoaded.observe(owner, Observer { result ->
                         if(result){
                             holder.lpImage.setImageBitmap(BitmapStore.loadedBitmaps[viewModel.currentProject.value?.name])
-                            viewModel.newPictureLoaded(false)
+
                         }
                     })
 
@@ -407,8 +407,9 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             inputStream?.close()
 
             // 3️⃣ Eltárolás későbbi használatra
+            showLoading()
             BitmapStore.loadedBitmaps[viewModel.currentProject.value?.name] = croppedBitmap
-            viewModel.newPictureLoaded(true)
+            viewModel.uploadCroppedImage(this)
         } else if (resultCode == UCrop.RESULT_ERROR) {
             val cropError = UCrop.getError(data!!)
             Log.e("CropError", "Vágás hiba: $cropError")
@@ -688,7 +689,19 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
             dialog.dismiss()
         })
         viewModel.isSaveFinished.observe(this, Observer { result ->
-            if(result == true){
+            if(result){
+                dialog.window?.apply {
+                    // Dim hátteret engedélyez
+                    addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                    // 0.0f -> nincs elsötétítés, 1.0f -> teljesen fekete
+                    setDimAmount(0f)
+                }
+                progressBar.visibility = View.GONE
+                dialog.dismiss()
+            }
+        })
+        viewModel.isNewPictureLoaded.observe(this, Observer { result ->
+            if(result){
                 dialog.window?.apply {
                     // Dim hátteret engedélyez
                     addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)

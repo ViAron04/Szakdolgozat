@@ -94,8 +94,13 @@ class MakerViewModel: ViewModel() {
 
     }
 
-    fun newPictureLoaded(value: Boolean){
-        _isNewPictureLoaded.value = value
+    fun uploadCroppedImage(context: Context){
+        viewModelScope.launch {
+            repository.uploadCroppedImage(currentProject.value?.name.toString(), context)
+            _isNewPictureLoaded.value = true
+            delay(30_00L)
+            _isNewPictureLoaded.value = false
+        }
     }
 
 }
