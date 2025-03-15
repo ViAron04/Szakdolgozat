@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.io.File
 
 
@@ -261,33 +262,25 @@ class MakerRepository {
     }
 
     suspend fun downloadImage(projectName: String, context: Context){
-        try {
-            val imageName = removeAccents(projectName)
-            val storageRef = dbStorage.child("maker_location_packs_images/$imageName.jpg")
+        withContext(Dispatchers.IO) { //biztosítja, hogy háttérszálon fusson a fgv.
+                val imageName = removeAccents(projectName)
+                val storageRef = dbStorage.child("maker_location_packs_images/$imageName.jpg")
+            try {
+                storageRef.metadata.await()
+                val uri = storageRef.downloadUrl.await()
 
-            storageRef.metadata.addOnSuccessListener {
-                storageRef.downloadUrl.addOnSuccessListener { uri ->
-                    Glide.with(context)
-                        .asBitmap()
-                        .load(uri)
-                        .into(object : CustomTarget<Bitmap>() {
-                            override fun onResourceReady(
-                                resource: Bitmap,
-                                transition: Transition<in Bitmap>?
-                            ) {
-                                loadedBitmaps[projectName] = resource
-                                Log.d("MakerRepository", "Kép letöltve")
-                            }
+                val bitmap = Glide.with(context)
+                    .asBitmap()
+                    .load(uri)
+                    .submit()
+                    .get()
 
-                            override fun onLoadCleared(placeholder: Drawable?) {
-                            }
-                        })
-                }
-            }.addOnFailureListener{
-                Log.d("MakerRepository", "Még nem készült kép")
+                loadedBitmaps[projectName] = bitmap
+                Log.d("MakerRepository", "Kép letöltve")
+
+            } catch (e: Exception) {
+                Log.e("MakerRepository", "Hiba a downloadImage-ben: ", e)
             }
-        }catch (e: Exception) {
-            Log.e("MakerRepository", "Hiba a downloadImage-ben: ", e)
         }
     }
 }

@@ -324,6 +324,9 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                 holder.lpArea.addTextChangedListener(areaLPWatcher)
                 holder.lpArea.tag = areaLPWatcher
 
+                holder.lpImage.setImageBitmap(loadedBitmaps[viewModel.currentProject.value!!.name]
+                    ?: BitmapFactory.decodeResource(holder.itemView.resources, R.drawable.questionmark))
+
                 holder.lpImage.setOnClickListener{
 
                     selectImage()
@@ -761,10 +764,10 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun backToProjects(view: View) {
-        viewModel.saveProjectChanges(this)
+        viewModel.saveProjectChangesBack(this)
 
         showLoading()
-        viewModel.isSaveFinished.observe(this, Observer { result ->
+        viewModel.isBackSaveFinished.observe(this, Observer { result ->
             if(result == true){
                 showMakerProjectsDialog(this)
             }

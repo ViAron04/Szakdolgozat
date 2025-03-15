@@ -23,6 +23,9 @@ class MakerViewModel: ViewModel() {
     private val _isSaveFinished = MutableLiveData<Boolean>(false)
     val isSaveFinished: LiveData<Boolean> get() = _isSaveFinished
 
+    private val _isBackSaveFinished = MutableLiveData<Boolean>(false)
+    val isBackSaveFinished: LiveData<Boolean> get() = _isBackSaveFinished
+
     private val _isNewPictureLoaded = MutableLiveData<Boolean>(false)
     val isNewPictureLoaded: LiveData<Boolean> get() = _isNewPictureLoaded
 
@@ -56,8 +59,8 @@ class MakerViewModel: ViewModel() {
 
     fun setCurrentProject(projectName: String, context: Context){
         viewModelScope.launch {
-            _currentProject.value = usersProjectsList.value?.find { it.name == projectName }
             repository.downloadImage(projectName, context)
+            _currentProject.value = usersProjectsList.value?.find { it.name == projectName }
         }
     }
 
@@ -86,6 +89,16 @@ class MakerViewModel: ViewModel() {
             _isSaveFinished.value = true
             delay(30_00L)
             _isSaveFinished.value = false
+        }
+
+    }
+
+    fun saveProjectChangesBack(context: Context){
+        viewModelScope.launch {
+            repository.saveProjectChanges(currentProject.value!!)
+            _isBackSaveFinished.value = true
+            delay(30_00L)
+            _isBackSaveFinished.value = false
         }
 
     }
