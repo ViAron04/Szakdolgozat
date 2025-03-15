@@ -101,14 +101,29 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"/>
-
-                <Button
-                    android:onClick="saveProjectData"
-                    android:layout_width="100dp"
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:orientation="horizontal"
                     android:layout_gravity="center"
-                    android:text="Mentés"/>
+                    android:layout_marginBottom="10dp">
 
+                    <Button
+                        android:onClick="saveProjectData"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_marginEnd="80dp"
+                        android:text="Mentés"/>
+
+                    <Button
+                        android:onClick="uploadProjectData"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:text="Felterjesztés"/>
+
+                </LinearLayout>
             </LinearLayout>
 
         <!--

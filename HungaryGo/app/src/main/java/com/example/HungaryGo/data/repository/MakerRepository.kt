@@ -19,6 +19,9 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ServerValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.storage.FirebaseStorage
@@ -33,6 +36,7 @@ import java.io.File
 class MakerRepository {
     private val auth: FirebaseAuth = Firebase.auth
     private val dbFirestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val dbRealtime = FirebaseDatabase.getInstance()
     val dbStorage = FirebaseStorage.getInstance().reference
     val currentUserEmail = auth.currentUser?.email.toString()
 
@@ -281,6 +285,40 @@ class MakerRepository {
             } catch (e: Exception) {
                 Log.e("MakerRepository", "Hiba a downloadImage-ben: ", e)
             }
+        }
+    }
+
+    suspend fun uploadProjectData(currentPorject: MakerLocationPackData){
+        withContext(Dispatchers.IO) {
+        try {
+            val submittedPacksRef = dbRealtime.getReference("submitted location packs")
+            val newPackRef = submittedPacksRef.child(currentPorject.name)
+
+            val locationsMap = currentPorject.locations.associateBy(
+                { it?.name ?: "unknown_location" }, // Kulcs: helyszín neve
+                { location ->
+                    mapOf(
+                        "latitude" to location?.markerOptions?.position?.latitude,
+                        "longitude" to location?.markerOptions?.position?.longitude,
+                        "description" to location?.description,
+                        "question" to location?.question,
+                        "answer" to location?.answer
+                    )
+                }
+            )
+
+            val locationPackData = mapOf(
+                "description" to currentPorject.description,
+                "area" to currentPorject.area,
+                "origin" to auth.currentUser?.displayName,
+                "timestamp" to ServerValue.TIMESTAMP,
+                "locations" to locationsMap)
+
+            newPackRef.setValue(locationPackData).await()
+
+        } catch (e: Exception){
+            Log.e("MakerRepository", "Hiba az uploadProjectData-ban: ", e)
+        }
         }
     }
 }

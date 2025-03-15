@@ -38,6 +38,7 @@ import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.HungaryGo.MakerLocationDescription
@@ -61,6 +62,7 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.yalantis.ucrop.UCrop
+import kotlinx.coroutines.launch
 import java.io.File
 
 class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
@@ -690,68 +692,38 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
-    fun showLoading(){
-        val dialog = Dialog(this)
-        dialog.setContentView(R.layout.loading)
-        dialog.setCancelable(false)
-        val progressBar = dialog.findViewById<ProgressBar>(R.id.progressBar)
-
-            dialog.window?.apply {
-                // dialog háttere átlátszó
+    fun showLoading() {
+        val dialog = Dialog(this).apply {
+            setContentView(R.layout.loading)
+            setCancelable(false)
+            window?.apply {
                 setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-                // dialogon kívüli terület sötétettbé tétele
                 addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
                 setDimAmount(0.5f)
             }
-            progressBar.visibility = View.VISIBLE
-            dialog.show()
+        }
 
+        val progressBar = dialog.findViewById<ProgressBar>(R.id.progressBar)
+        progressBar.visibility = View.VISIBLE
+        dialog.show()
 
-        viewModel.usersProjectsList.observe(this, Observer {
-            dialog.window?.apply {
-                // Dim hátteret engedélyez
-                addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-                // 0.0f -> nincs elsötétítés, 1.0f -> teljesen fekete
-                setDimAmount(0f)
+        // Observer, amely figyeli az állapotokat, és bezárja a Dialogot
+        val dismissObserver = Observer<Any?> { result ->
+            if (result != null) {
+                dismissDialog(dialog, progressBar)
             }
-            progressBar.visibility = View.GONE
-            dialog.dismiss()
-        })
-        viewModel.currentProject.observe(this, Observer {
-            dialog.window?.apply {
-                // Dim hátteret engedélyez
-                addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-                // 0.0f -> nincs elsötétítés, 1.0f -> teljesen fekete
-                setDimAmount(0f)
-            }
-            progressBar.visibility = View.GONE
-            dialog.dismiss()
-        })
-        viewModel.isSaveFinished.observe(this, Observer { result ->
-            if(result){
-                dialog.window?.apply {
-                    // Dim hátteret engedélyez
-                    addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-                    // 0.0f -> nincs elsötétítés, 1.0f -> teljesen fekete
-                    setDimAmount(0f)
-                }
-                progressBar.visibility = View.GONE
-                dialog.dismiss()
-            }
-        })
-        viewModel.isNewPictureLoaded.observe(this, Observer { result ->
-            if(result){
-                dialog.window?.apply {
-                    // Dim hátteret engedélyez
-                    addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-                    // 0.0f -> nincs elsötétítés, 1.0f -> teljesen fekete
-                    setDimAmount(0f)
-                }
-                progressBar.visibility = View.GONE
-                dialog.dismiss()
-            }
-        })
+        }
+
+        viewModel.usersProjectsList.observe(this, dismissObserver)
+        viewModel.currentProject.observe(this, dismissObserver)
+        viewModel.isSaveFinished.observe(this, dismissObserver)
+        viewModel.isNewPictureLoaded.observe(this, dismissObserver)
+    }
+
+    private fun dismissDialog(dialog: Dialog, progressBar: ProgressBar) {
+        dialog.window?.setDimAmount(0f) // Háttér elsötétítés kikapcsolása
+        progressBar.visibility = View.GONE
+        dialog.dismiss()
     }
 
     fun backToMainScreen() {
@@ -772,5 +744,17 @@ class MakerScreen : AppCompatActivity(), OnMapReadyCallback {
                 showMakerProjectsDialog(this)
             }
         })
+    }
+
+    fun uploadProjectData(view: View) {
+        lifecycleScope.launch{
+            val isSuccessful= viewModel.uploadProjectData()
+            if(isSuccessful){
+                Toast.makeText(applicationContext, "Sikeres feltöltés!", Toast.LENGTH_LONG).show()
+            }
+            else{
+                Toast.makeText(applicationContext, "Feltöltés sikertelen!", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 }

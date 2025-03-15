@@ -1,6 +1,7 @@
 package com.example.HungaryGo.ui.Maker
 
 import android.content.Context
+import android.util.Log
 import android.widget.ArrayAdapter
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,8 +11,10 @@ import com.example.HungaryGo.MakerLocationDescription
 import com.example.HungaryGo.MakerLocationPackData
 import com.example.HungaryGo.data.repository.MakerRepository
 import com.google.android.gms.maps.model.MarkerOptions
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MakerViewModel: ViewModel() {
     private val _usersProjectsList = MutableLiveData<MutableList<MakerLocationPackData>?>()
@@ -112,4 +115,15 @@ class MakerViewModel: ViewModel() {
         }
     }
 
+    suspend fun uploadProjectData(): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                repository.uploadProjectData(currentProject.value!!)
+                true
+            } catch (e: Exception) {
+                Log.e("makerViewModel", "Hiba az uploadProjectData-ban", e)
+                false
+            }
+        }
+    }
 }
